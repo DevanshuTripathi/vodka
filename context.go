@@ -13,6 +13,8 @@ type HandlerFunc func(*Context) // Handler Function with Context wrapping
 
 type M map[string]any // Shortcut map
 
+const abortIndex int8 = 63 // High Abort Number
+
 type Context struct {
 	Writer     http.ResponseWriter // net/http response writer
 	Request    *http.Request       // net/http request
@@ -20,6 +22,11 @@ type Context struct {
 	handlers   []HandlerFunc       // stores middleware funcs and also main handler func
 	index      int8                // tracks current step
 	queryCache url.Values          // Caches query parameter values for fast access
+}
+
+// Abort http request
+func (c *Context) Abort() {
+	c.index = abortIndex
 }
 
 // Step By Step execution of middlewares

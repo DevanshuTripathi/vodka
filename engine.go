@@ -7,22 +7,47 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+type RouterGroup struct {
+	prefix      string
+	middlewares []HandlerFunc
+	engine      *Engine
+}
+
 // httprouter wrapper
 type Engine struct {
-	router      *httprouter.Router
-	middlewares []HandlerFunc
+	router *httprouter.Router
+	*RouterGroup
 }
 
 // creates a new router
-func New() *Engine {
-	return &Engine{
-		router:      httprouter.New(),
+func NewRouter() *Engine {
+	engine := &Engine{
+		router: httprouter.New(),
+	}
+
+	engine.RouterGroup = &RouterGroup{
+		prefix:      "",
 		middlewares: make([]HandlerFunc, 0),
+		engine:      engine,
+	}
+
+	return engine
+}
+
+func (rg *RouterGroup) Group(prefix string, middlewares ...HandlerFunc) *RouterGroup {
+	newMiddlewares := make([]HandlerFunc, len(rg.middlewares), len(rg.middlewares)+len(middlewares))
+	copy(newMiddlewares, rg.middlewares)
+	newMiddlewares = append(newMiddlewares, middlewares...)
+
+	return &RouterGroup{
+		prefix:      rg.prefix + prefix,
+		middlewares: newMiddlewares,
+		engine:      rg.engine,
 	}
 }
 
-func (e *Engine) Use(middleware ...HandlerFunc) {
-	e.middlewares = append(e.middlewares, middleware...)
+func (rg *RouterGroup) Use(middlewares ...HandlerFunc) {
+	rg.middlewares = append(rg.middlewares, middlewares...)
 }
 
 // Runs the http server
@@ -37,21 +62,19 @@ func (e *Engine) Run(addr string) error {
 	return http.ListenAndServe(addr, e.router)
 }
 
-func makeHandlers(e *Engine, handler HandlerFunc) []HandlerFunc {
-	handlers := make([]HandlerFunc, 0, len(e.middlewares)+1)
-	handlers = append(handlers, e.middlewares...)
+func (rg *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
+	absolutePath := rg.prefix + comp
+
+	handlers := make([]HandlerFunc, 0, len(rg.middlewares)+1)
+	handlers = append(handlers, rg.middlewares...)
 	handlers = append(handlers, handler)
 
-	return handlers
-}
-
-func (e *Engine) addRoute(method string, path string, handler HandlerFunc) {
-	e.router.Handle(method, path, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	rg.engine.router.Handle(method, absolutePath, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		c := &Context{
 			Writer:   w,
 			Request:  r,
 			Params:   params,
-			handlers: makeHandlers(e, handler),
+			handlers: handlers,
 			index:    -1,
 		}
 
@@ -59,18 +82,18 @@ func (e *Engine) addRoute(method string, path string, handler HandlerFunc) {
 	})
 }
 
-func (e *Engine) GET(path string, handler HandlerFunc) {
-	e.addRoute(http.MethodGet, path, handler)
+func (rg *RouterGroup) GET(path string, handler HandlerFunc) {
+	rg.addRoute(http.MethodGet, path, handler)
 }
 
-func (e *Engine) POST(path string, handler HandlerFunc) {
-	e.addRoute(http.MethodPost, path, handler)
+func (rg *RouterGroup) POST(path string, handler HandlerFunc) {
+	rg.addRoute(http.MethodPost, path, handler)
 }
 
-func (e *Engine) PUT(path string, handler HandlerFunc) {
-	e.addRoute(http.MethodPut, path, handler)
+func (rg *RouterGroup) PUT(path string, handler HandlerFunc) {
+	rg.addRoute(http.MethodPut, path, handler)
 }
 
-func (e *Engine) DELETE(path string, handler HandlerFunc) {
-	e.addRoute(http.MethodDelete, path, handler)
+func (rg *RouterGroup) DELETE(path string, handler HandlerFunc) {
+	rg.addRoute(http.MethodDelete, path, handler)
 }
