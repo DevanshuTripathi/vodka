@@ -24,8 +24,10 @@ type Engine struct {
 
 // creates a new router
 func NewRouter() *Engine {
+	router := httprouter.New()
+	router.HandleOPTIONS = false
 	engine := &Engine{
-		router: httprouter.New(),
+		router: router,
 	}
 
 	engine.RouterGroup = &RouterGroup{
