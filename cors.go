@@ -4,33 +4,33 @@ import "net/http"
 
 func AllowCORS(origins []string) HandlerFunc {
 	return func(c *Context) {
-		clientOrigin := c.Request.Header.Get("Origin")
-		allowThisOrigin := ""
+		origin := c.Request.Header.Get("Origin")
+		allow := false
 
+		// Check if the origin is in your allowed list
 		for _, o := range origins {
-			if o == "*" || o == clientOrigin {
-				allowThisOrigin = clientOrigin
-
-				if o == "*" {
-					allowThisOrigin = "*"
-				}
+			if o == "*" || o == origin {
+				allow = true
 				break
 			}
 		}
 
-		if allowThisOrigin != "" {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", allowThisOrigin)
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, Origin, X-Requested-With")
+		if allow {
+			// Set the necessary headers for POST requests
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		}
 
-		if c.Request.Method == http.MethodOptions {
-			if allowThisOrigin != "" {
-				c.Writer.WriteHeader(http.StatusNoContent) // 204: All good, proceed!
+		// The Critical Preflight Check
+		if c.Request.Method == "OPTIONS" {
+			if allow {
+				c.Writer.WriteHeader(http.StatusNoContent) // Send 204 Success
 			} else {
-				c.Writer.WriteHeader(http.StatusForbidden) // 403: Origin not allowed
+				c.Writer.WriteHeader(http.StatusForbidden) // Send 403 Forbidden
 			}
 
+			// Stop the request from going to the router
 			c.Abort()
 			return
 		}

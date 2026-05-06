@@ -22,11 +22,13 @@ type Context struct {
 	handlers   []HandlerFunc       // stores middleware funcs and also main handler func
 	index      int8                // tracks current step
 	queryCache url.Values          // Caches query parameter values for fast access
+	isAborted  bool
 }
 
 // Abort http request
 func (c *Context) Abort() {
 	c.index = abortIndex
+	c.isAborted = true
 }
 
 // Step By Step execution of middlewares

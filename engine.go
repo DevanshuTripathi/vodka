@@ -70,7 +70,7 @@ func (e *Engine) Run(addr string) error {
 	log.Printf(Green+"Pouring Vodka on %s\n"+Reset, addr)
 
 	// Using net/http
-	return http.ListenAndServe(addr, e.router)
+	return http.ListenAndServe(addr, e)
 }
 
 // Serve Static files
@@ -119,6 +119,30 @@ func (e *Engine) ServeSPA(root string) {
 		fs.ServeHTTP(w, r)
 	})
 
+}
+
+// ServeHTTP intercepts every request before it hits the router
+func (e *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	// Create a fresh Context for the incoming request
+	c := &Context{
+		Writer:  w,
+		Request: req,
+	}
+
+	// 1. Run all Global Middlewares FIRST (like your AllowCORS)
+	// This assumes your app.Use() appends to a slice called e.middlewares
+	for _, middleware := range e.middlewares {
+		middleware(c)
+
+		// If a middleware aborts the request (e.g., CORS returns 204 for OPTIONS),
+		// we stop execution immediately. The router is never called.
+		if c.isAborted {
+			return
+		}
+	}
+
+	// 2. If the middleware didn't stop the request, pass it to the router
+	e.router.ServeHTTP(w, req)
 }
 
 func (rg *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
