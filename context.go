@@ -3,9 +3,13 @@ package vodka
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -14,6 +18,8 @@ type HandlerFunc func(*Context) // Handler Function with Context wrapping
 type M map[string]any // Shortcut map
 
 const abortIndex int8 = 63 // High Abort Number
+
+var validate = validator.New() // validator for struct binding
 
 type Context struct {
 	Writer     http.ResponseWriter // net/http response writer
@@ -76,6 +82,46 @@ func (c *Context) Get(key string) (value any, exists bool) {
 	return
 }
 
+// Retrieves text value from a miltipart form
+func (c *Context) FormValue(key string) string {
+	return c.Request.FormValue(key)
+}
+
+// Retrieves a single file from multipart form
+func (c *Context) FormFile(name string) (*multipart.FileHeader, error) {
+	if c.Request.MultipartForm == nil {
+		if err := c.Request.ParseMultipartForm(32 << 20); err != nil {
+			return nil, err
+		}
+	}
+
+	file, header, err := c.Request.FormFile(name)
+	if err != nil {
+		return nil, err
+	}
+	file.Close()
+
+	return header, nil
+}
+
+// Saves Uploaded File to destination on disk
+func (c *Context) SaveUploadedFile(file *multipart.FileHeader, dst string) error {
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, src)
+	return err
+}
+
 // Get Param Value
 func (c *Context) Param(key string) string {
 	return c.Params.ByName(key)
@@ -90,7 +136,15 @@ func (c *Context) BindJSON(obj any) error {
 	defer c.Request.Body.Close()
 
 	decoder := json.NewDecoder(c.Request.Body)
-	return decoder.Decode(obj)
+	if err := decoder.Decode(obj); err != nil {
+		return err // Failed to parse JSON
+	}
+
+	if err := validate.Struct(obj); err != nil {
+		return err // Failed validation
+	}
+
+	return nil
 }
 
 // Encode Response to JSON
