@@ -21,11 +21,23 @@ const abortIndex int8 = 63 // High Abort Number
 
 var validate = validator.New() // validator for struct binding
 
+// Custom error type
+type VodkaError struct {
+	Err    error
+	Status int
+}
+
+// return string error
+func (v *VodkaError) Error() string {
+	return v.Err.Error()
+}
+
 type Context struct {
 	Writer     http.ResponseWriter // net/http response writer
 	Request    *http.Request       // net/http request
 	Params     httprouter.Params   // URL Parameters for dynamic routing
 	Keys       map[string]any      // Key-Value Store
+	Errors     []*VodkaError       // Stores errors along the middleware chain
 	handlers   []HandlerFunc       // stores middleware funcs and also main handler func
 	index      int8                // tracks current step
 	queryCache url.Values          // Caches query parameter values for fast access
@@ -152,6 +164,17 @@ func (c *Context) JSON(statusCode int, obj any) {
 	c.Writer.Header().Set("Content-Type", "application/json")
 	c.Writer.WriteHeader(statusCode)
 	json.NewEncoder(c.Writer).Encode(obj)
+}
+
+// Stores Errors in the context to be handled by ErrorHandler Middleware
+func (c *Context) Error(statusCode int, err error) {
+	if err == nil {
+		return
+	}
+	c.Errors = append(c.Errors, &VodkaError{
+		Err:    err,
+		Status: statusCode,
+	})
 }
 
 // Basic String Response

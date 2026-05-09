@@ -12,45 +12,69 @@ __/\\\________/\\\_______/\\\\\_______/\\\\\\\\\\\\_____/\\\________/\\\_____/\\
         _______\///_____________\/////_______\////////////_____\///________\///__\///________\///__
 ```
 
-**The ultra-fast, no-botanical-nonsense HTTP framework for Go.**
+# Vodka
 
-Vodka is a lightweight, high-performance web framework built to make Go HTTP servers ergonomic and incredibly fast. It strips away the bloat and provides exactly what you need: a blazing-fast radix tree router, a clean context wrapper, seamless middleware chaining, and a **powerful built-in CLI for instantly generating and running full-stack React applications.**
+**A modern Go web framework focused on developer experience, full-stack workflow, and fast iteration.**
 
-## Installation: The Vodka CLI
+Vodka is a lightweight, high-performance HTTP framework for Go that combines clean routing, middleware chaining, validation, authentication utilities, and a powerful CLI for building modern full-stack applications.
 
-To get the full Vodka experience, you first need to install the CLI tool globally. This tool acts as your project generator and dev-server supervisor.
+Unlike traditional Go frameworks that focus only on request handling, Vodka focuses heavily on developer experience:
+
+- ⚡ Fast routing with Radix Tree architecture
+- 🔥 Built-in hot reload for Go backends
+- ⚛️ Vite + React full-stack scaffolding
+- 🧩 Middleware chaining system
+- 🔐 Authentication helpers and JWT validation
+- ✅ Request validation support
+- 🛠️ Clean and ergonomic API design
+- 🚀 One-command development workflow
+
+---
+
+# Installation
+
+## Install the Vodka CLI
 
 ```bash
-go install https://github.com/DevanshuTripathi/vodka/cmd/vodka@latest
+go install github.com/DevanshuTripathi/vodka/cmd/vodka@latest
 ```
 
-**Important Note:** Ensure your Go bin directory is added to your system's PATH, otherwise your terminal won't recognize the vodka command.
-- **Mac/Linux:** Add export PATH=$PATH:$(go env GOPATH)/bin to your ~/.bashrc or ~/.zshrc.
-- **Windows:** Ensure %USERPROFILE%\go\bin is added to your Environment Variables.
+Make sure your Go bin directory is in your system PATH.
 
-## Building Full-Stack Apps
+### Linux / macOS
 
-Vodka is designed to bridge the gap between Go backends and modern single-page applications. You can spin up a complete Full-Stack environment (Vodka + React Vite) in seconds.
+```bash
+export PATH=$PATH:$(go env GOPATH)/bin
+```
 
-1. **Create a Project**
+### Windows
 
-Run the following command to scaffold a new project:
+Add the following directory to Environment Variables:
+
+```text
+%USERPROFILE%\go\bin
+```
+
+---
+
+# Quick Start
+
+## Create a Full-Stack App
 
 ```bash
 vodka create my-app
 ```
 
-This instantly generates:
+This generates:
 
-- A ready-to-use Go backend with Vodka installed.
+- A Go backend powered by Vodka
+- A Vite + React frontend
+- Preconfigured development workflow
+- SPA serving support for production deployments
 
-- A lightning-fast Vite + React frontend.
+---
 
-- Pre-configured routing to seamlessly serve your React app from the Go backend in production.
-
-2. **Install Dependencies**
-
-Navigate into your new project and install the frontend packages:
+## Install Frontend Dependencies
 
 ```bash
 cd my-app
@@ -58,29 +82,58 @@ cd frontend && npm install
 cd ..
 ```
 
-2. **Run the Dev Environment**
+---
 
-Forget running multiple terminals. The Vodka CLI manages everything for you:
+## Start Development Mode
 
 ```bash
 vodka run dev
 ```
 
-This command concurrently starts the Vite Hot-Module-Replacement (HMR) server for your React frontend and the Vodka hot-reload watcher for your Go backend. Edit a .jsx file, the browser updates instantly. Edit a .go file, the backend rebuilds in milliseconds.
+This starts:
 
-## Using Vodka as a Standalone API
+- The Vite frontend dev server
+- The Vodka backend
+- Automatic Go hot reload
+- Concurrent frontend/backend workflow
 
-If you are just building a REST API or microservice without a React frontend, Vodka is still the perfect tool.
+Edit `.jsx` files → frontend updates instantly.
 
-**Installing**
+Edit `.go` files → backend rebuilds automatically.
 
-Install the vodka CLI
+---
 
-```bash
-go install github.com/DevanshuTripathi/vodka/cmd/vodka@latest
+# Minimal API Example
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/DevanshuTripathi/vodka"
+)
+
+func main() {
+	app := vodka.DefaultRouter()
+
+	app.GET("/ping", func(c *vodka.Context) {
+		c.JSON(200, vodka.M{
+			"message": "pong!",
+		})
+	})
+
+	if err := app.Run(":8080"); err != nil {
+		log.Fatal(err)
+	}
+}
 ```
 
-Init a Go module and install vodka
+---
+
+# Using Vodka for APIs
+
+## Create a Go Module
 
 ```bash
 mkdir backend-app
@@ -89,87 +142,208 @@ go mod init app
 go get github.com/DevanshuTripathi/vodka
 ```
 
-**Hot-Reloading your API**
+---
 
-Inside any standard Go module using Vodka, simply type:
+## Run with Hot Reload
+
+Inside any Go project using Vodka:
 
 ```bash
 vodka
 ```
 
-The CLI will compile your app into a temporary binary, start the server, and automatically rebuild and restart it whenever you save a .go file.
+Vodka automatically:
 
-**Minimal Backend Example**
+- Watches `.go` files
+- Rebuilds your backend
+- Restarts the server instantly
 
-Here is a fully functional Vodka application:
+---
 
-```Go
-package main
+# Features
 
-import (
-    "log"
-    "https://github.com/DevanshuTripathi/vodka"
-)
+| Feature | Included |
+|---|---|
+| Radix Tree Routing | ✅ |
+| Middleware Chaining | ✅ |
+| Route Groups | ✅ |
+| JSON Binding | ✅ |
+| Request Validation | ✅ |
+| JWT Validation Helpers | ✅ |
+| Bearer Auth Middleware | ✅ |
+| Hot Reload | ✅ |
+| Vite + React Scaffolding | ✅ |
+| SPA Serving | ✅ |
+| Panic Recovery Middleware | ✅ |
+| Logger Middleware | ✅ |
+| CORS Middleware | ✅ |
+| Context Storage | ✅ |
 
-func main() {
-    // Initialize a new Vodka engine with default logging/recovery middleware
-    app := vodka.Default()
+---
 
-    // Define a simple GET route
-    app.GET("/ping", func(c *vodka.Context) {
-        c.JSON(200, vodka.M{"message": "pong! 🏓"})
-    })
+# Core Concepts
 
-    // Start the server on port 8080
-    if err := app.Run(":8080"); err != nil {
-        log.Fatalf("Server crashed: %v", err)
-    }
-}
+## Engine
+
+`vodka.Engine` is the central router and application instance.
+
+It uses a Radix Tree-based routing architecture for fast request matching and low overhead.
+
+```go
+app := vodka.DefaultRouter()
 ```
 
-## What Everything Does (Architecture)
+---
 
-### The Engine (Router)
+## Context
 
-At its core, vodka.Engine is a highly optimized router powered by httprouter under the hood. Instead of scanning linearly through routes, it uses a Radix Tree (Prefix Tree). This means the time it takes to find a route is proportional only to the length of the URL path, not the number of routes in your API. It handles highly complex routing logic in under a microsecond without allocating new memory.
+`vodka.Context` wraps Go's `http.Request` and `http.ResponseWriter` into a clean and ergonomic API.
 
-### The Context
+### JSON Response
 
-vodka.Context is the central struct passed to all your handlers. It wraps Go's standard http.Request and http.ResponseWriter into a single, clean object and provides quality-of-life helper methods.
+```go
+c.JSON(200, vodka.M{
+    "message": "hello",
+})
+```
 
-- c.JSON(statusCode, obj): Automatically sets the content type and encodes your Go structs into JSON.
+### Query Parameters
 
-- c.String(statusCode, text): Sends plain text responses instantly.
+```go
+name := c.Query("name")
+```
 
-- c.BindJSON(&obj): Instantly parses incoming request bodies into your custom Go structs.
+### URL Parameters
 
-### Mixers (Middleware)
+```go
+id := c.Param("id")
+```
 
-Vodka uses the Chain of Responsibility pattern to handle middleware sequentially. Middlewares are essentially an array of handlers.
+### Bind JSON
 
-You can inject global middleware using app.Use(). Inside your middleware, calling c.Next() pauses the current function, executes the next handler in the chain, and then returns control back to the middleware.
+```go
+var user User
+c.BindJSON(&user)
+```
 
-**Example: A Custom Logger Middleware**
+### Error Handling
 
-```Go
+```go
+c.Error(400, errors.New("invalid request"))
+```
+
+---
+
+# Middleware
+
+Vodka uses a middleware chain architecture similar to modern backend frameworks.
+
+Middlewares can:
+
+- Modify requests
+- Attach values to context
+- Handle authentication
+- Log requests
+- Recover from panics
+- Intercept errors
+
+---
+
+## Custom Middleware Example
+
+```go
 func Logger() vodka.HandlerFunc {
 	return func(c *vodka.Context) {
-		// 1. Mark the start time (Before Request)
-		t := time.Now()
+		start := time.Now()
 
-		// 2. Pass control to the next handler
 		c.Next()
 
-		// 3. Calculate latency (After Request)
-		latency := time.Since(t)
-		log.Printf("[%s] %s %v\n", c.Request.Method, c.Request.URL.Path, latency)
+		latency := time.Since(start)
+
+		log.Printf(
+			"[%s] %s %v",
+			c.Request.Method,
+			c.Request.URL.Path,
+			latency,
+		)
 	}
 }
 
-// Applying it globally:
 app.Use(Logger())
 ```
 
-**Full-Stack Routung(ServeSPA)**
+---
 
-When you use vodka create, your backend comes with app.ServeSPA("./frontend/dist") pre-configured. This acts as a smart fallback handler: if a user requests a route that isn't a registered API endpoint, Vodka will automatically serve your React index.html, allowing React Router to handle client-side navigation flawlessly without throwing 404s on page refresh.
+# Validation
+
+Vodka supports request validation using struct tags.
+
+```go
+type User struct {
+	Email    string `validate:"required,email"`
+	Password string `validate:"min=8"`
+}
+```
+
+---
+
+# Authentication
+
+Vodka includes built-in Bearer authentication middleware and JWT validation helpers.
+
+You can also provide custom validation logic:
+
+```go
+app.Use(vodka.BearerAuth(contextKey, func(token string) (any, bool) {
+	return validateToken(token)
+}))
+```
+
+---
+
+# Full-Stack SPA Support
+
+Projects generated using `vodka create` come with SPA serving preconfigured.
+
+```go
+app.ServeSPA("./frontend/dist")
+```
+
+If a route does not match an API endpoint, Vodka automatically serves the frontend application, enabling seamless React Router support in production.
+
+---
+
+# Philosophy
+
+Vodka is designed around a few core ideas:
+
+- Fast development workflow
+- Minimal boilerplate
+- Strong developer experience
+- Clean APIs
+- Modern full-stack integration
+- Practical defaults without excessive abstraction
+
+---
+
+# Roadmap
+
+- More middleware packages
+- Enhanced validation system
+- Improved benchmarking suite
+- Expanded CLI tooling
+- Testing utilities
+
+---
+
+# Contributing
+
+Contributions, issues, and feature requests are welcome.
+
+If you find bugs or have suggestions, feel free to open an issue or submit a pull request.
+
+---
+
+# License
+
+MIT License

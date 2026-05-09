@@ -41,7 +41,7 @@ func NewRouter() *Engine {
 
 func DefaultRouter() *Engine {
 	engine := NewRouter()
-	engine.Use(Recovery(), Logger())
+	engine.Use(Recovery(), Logger(), ErrorHandler())
 	return engine
 }
 
