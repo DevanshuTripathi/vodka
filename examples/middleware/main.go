@@ -6,15 +6,6 @@ import (
 
 	"github.com/DevanshuTripathi/vodka"
 )
-const (
-	Reset  = "\033[0m"
-	Red    = "\033[31m"
-	Green  = "\033[32m"
-	Yellow = "\033[33m"
-	Blue   = "\033[34m"
-	Cyan   = "\033[36m"
-	Gray   = "\033[37m"
-)
 
 // Custom Logger Middleware
 // returns a handler function
@@ -27,7 +18,7 @@ func Logger() vodka.HandlerFunc {
 		latency := time.Since(start) // Calculate latency of the request
 
 		log.Printf(
-			"["+Blue+"%s"+Reset+"] %s "+Gray+"%v"+Reset,
+			"[%s] %s %v",
 			c.Request.Method,
 			c.Request.URL.Path,
 			latency,
@@ -58,4 +49,3 @@ func main() {
 		log.Fatalf("Server Didn't Start...")
 	}
 }
-

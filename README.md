@@ -261,10 +261,10 @@ func Logger() vodka.HandlerFunc {
 		latency := time.Since(start)
 
 		log.Printf(
-			"["+Blue+"%s"+Reset+"] %s "+Gray+"%v"+Reset,
+			"[%s] %s %v",
 			c.Request.Method,
 			c.Request.URL.Path,
-			latency,
+			latency, 
 		)
 	}
 }
