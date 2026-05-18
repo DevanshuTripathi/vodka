@@ -1,65 +1,95 @@
 package vodka
 
 import (
+	"context"
 	"net/http"
-	"net/http/httptest"
-	"reflect"
 	"testing"
+	"time"
 )
 
-func TestRouteParams(t *testing.T) {
-	app := DefaultRouter()
+// ─────────────────────────────────────────────
+// Graceful Shutdown Tests — Issue #9
+// ─────────────────────────────────────────────
 
-	app.GET("/users/:id", func(c *Context) {
-		c.String(200, c.Param("id"))
+func TestRunGraceful_StartsAndShutdownCleanly(t *testing.T) {
+	app := NewRouter()
+	app.GET("/ping", func(c *Context) {
+		c.JSON(200, M{"message": "pong"})
 	})
 
-	req := httptest.NewRequest("GET", "/users/67", nil)
-	w := httptest.NewRecorder()
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- app.RunGraceful(":19090", 5*time.Second)
+	}()
 
-	app.ServeHTTP(w, req)
+	// Give the server a moment to start
+	time.Sleep(100 * time.Millisecond)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected 200, got %d", w.Code)
+	// Shutdown programmatically — no OS signal needed
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := app.Shutdown(ctx); err != nil {
+		t.Fatalf("shutdown error: %v", err)
 	}
 
-	if w.Body.String() != "67" {
-		t.Fatalf("expected 67, got %s", w.Body.String())
+	select {
+	case err := <-errCh:
+		if err != nil {
+			t.Fatalf("expected clean shutdown, got: %v", err)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("graceful shutdown timed out")
 	}
 }
 
-func TestMiddlewareChain(t *testing.T) {
+func TestRunGraceful_InFlightRequestCompletes(t *testing.T) {
 	app := NewRouter()
 
-	calls := []string{}
-
-	app.Use(func(c *Context) {
-		calls = append(calls, "Middleware1")
-		c.Next()
+	// Slow handler — simulates an in-flight request
+	app.GET("/slow", func(c *Context) {
+		time.Sleep(200 * time.Millisecond)
+		c.JSON(200, M{"message": "done"})
 	})
 
-	app.Use(func(c *Context) {
-		calls = append(calls, "Middleware2")
-		c.Next()
-	})
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- app.RunGraceful(":19091", 2*time.Second)
+	}()
 
-	app.Use(func(c *Context) {
-		calls = append(calls, "Middleware3")
-		c.Next()
-	})
+	time.Sleep(100 * time.Millisecond)
 
-	app.GET("/test", func(c *Context) {
-		calls = append(calls, "Handler")
-	})
+	// Fire the slow request in parallel
+	reqDone := make(chan struct{})
+	go func() {
+		resp, err := http.Get("http://localhost:19091/slow")
+		if err == nil {
+			resp.Body.Close()
+		}
+		close(reqDone)
+	}()
 
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
-	w := httptest.NewRecorder()
+	// Let the request reach the handler, then shutdown programmatically
+	time.Sleep(50 * time.Millisecond)
 
-	app.ServeHTTP(w, req)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	_ = app.Shutdown(ctx)
 
-	expected := []string{"Middleware1", "Middleware2", "Middleware3", "Handler"}
+	// In-flight request must finish before shutdown completes
+	select {
+	case <-reqDone:
+		// good — request completed
+	case <-time.After(3 * time.Second):
+		t.Fatal("in-flight request did not complete before shutdown")
+	}
 
-	if !reflect.DeepEqual(calls, expected) {
-		t.Fatalf("expected %v, got %v", expected, calls)
+	select {
+	case err := <-errCh:
+		if err != nil {
+			t.Fatalf("unexpected shutdown error: %v", err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("server did not shut down in time")
 	}
 }

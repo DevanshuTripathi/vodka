@@ -1,11 +1,15 @@
 package vodka
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path"
 	"path/filepath"
+	"syscall"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
@@ -19,8 +23,10 @@ type RouterGroup struct {
 
 // httprouter wrapper
 type Engine struct {
-	router   *httprouter.Router
-	WSConfig *WSConfig
+	router     *httprouter.Router
+	WSConfig   *WSConfig
+	server     *http.Server  // graceful shutdown — Issue #9
+	shutdownCh chan struct{} // graceful shutdown — Issue #9
 	*RouterGroup
 }
 
@@ -29,8 +35,9 @@ func NewRouter() *Engine {
 	router := httprouter.New()
 	router.HandleOPTIONS = false
 	engine := &Engine{
-		router:   router,
-		WSConfig: DefaultWSConfig(),
+		router:     router,
+		WSConfig:   DefaultWSConfig(),
+		shutdownCh: make(chan struct{}), // graceful shutdown — Issue #9
 	}
 
 	engine.RouterGroup = &RouterGroup{
@@ -282,4 +289,69 @@ func (rg *RouterGroup) WS(relativePath string, handler WSHandlerFunc) {
 
 		handler(wc)
 	})
+}
+
+// ─────────────────────────────────────────────
+// Graceful Shutdown — Issue #9
+// ─────────────────────────────────────────────
+
+func (e *Engine) RunGraceful(addr string, timeout time.Duration) error {
+	if addr == "" {
+		addr = ":8080"
+	}
+
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: e,
+	}
+	e.server = srv
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(quit)
+
+	serverErr := make(chan error, 1)
+	go func() {
+		log.Printf(Green+"Pouring Vodka on %s\n"+Reset, addr)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			serverErr <- err
+		}
+	}()
+
+	// Block until OS signal, programmatic shutdown, or server error
+	select {
+	case err := <-serverErr:
+		return err
+	case sig := <-quit:
+		log.Printf(Yellow+"[Vodka] Signal received: %v — draining requests...\n"+Reset, sig)
+	case <-e.shutdownCh: // triggered by Shutdown()
+		log.Printf(Yellow + "[Vodka] Programmatic shutdown — draining requests...\n" + Reset)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Printf(Red+"[Vodka] Forced shutdown after timeout: %v\n"+Reset, err)
+		return err
+	}
+
+	log.Printf(Green + "[Vodka] Server shut down cleanly.\n" + Reset)
+	return nil
+}
+
+// Shutdown gracefully stops the server programmatically.
+// Useful for testing without needing OS signals.
+func (e *Engine) Shutdown(ctx context.Context) error {
+	if e.server == nil {
+		return nil
+	}
+	// Signal RunGraceful's select to unblock
+	select {
+	case <-e.shutdownCh:
+		// already closed, do nothing
+	default:
+		close(e.shutdownCh)
+	}
+	return e.server.Shutdown(ctx)
 }
