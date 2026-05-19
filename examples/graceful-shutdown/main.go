@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"net/http"
+	"time"
 
 	"github.com/DevanshuTripathi/vodka"
 )
@@ -10,11 +12,24 @@ func main() {
 	app := vodka.DefaultRouter()
 
 	app.GET("/ping", func(c *vodka.Context) {
-		c.JSON(200, vodka.M{"message": "pong"})
+		c.JSON(http.StatusOK, vodka.M{"message": "pong"})
 	})
 
-	// Start the server.
-	if err := app.Run(":8080"); err != nil {
-		log.Fatal(err)
+	// Simulates a slow endpoint like a DB query or file upload.
+	// When Ctrl+C or SIGTERM arrives, this request will be
+	// allowed to finish before the server closes.
+	app.GET("/slow", func(c *vodka.Context) {
+		time.Sleep(5 * time.Second)
+		c.JSON(http.StatusOK, vodka.M{"message": "finished"})
+	})
+
+	// Pass RunConfig to enable graceful shutdown.
+	// Without RunConfig, Run behaves exactly as before.
+	if err := app.Run(":8080", vodka.RunConfig{
+		GracefulTimeout: 15 * time.Second,
+	}); err != nil {
+		log.Fatal("shutdown error:", err)
 	}
+
+	log.Println("Server exited cleanly.")
 }

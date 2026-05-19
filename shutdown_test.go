@@ -1,28 +1,30 @@
 package vodka
 
 import (
+	"context"
 	"net/http"
-	"os"
 	"sync"
-	"syscall"
 	"testing"
 	"time"
 )
 
-func TestRunGracefully_CleanShutdownOnSIGTERM(t *testing.T) {
+func TestRun_GracefulShutdown_CleanExit(t *testing.T) {
 	app := NewRouter()
 	app.GET("/ping", func(c *Context) {
 		c.String(http.StatusOK, "pong")
 	})
 
-	quit := make(chan os.Signal, 1)
+	ctx, cancel := context.WithCancel(context.Background())
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- app.runGracefully(":19001", ShutdownConfig{Timeout: 5 * time.Second}, quit)
+		errCh <- app.Run(":19001", RunConfig{
+			GracefulTimeout: 5 * time.Second,
+			BaseContext:     ctx,
+		})
 	}()
 
 	waitForServer(t, "http://localhost:19001/ping")
-	quit <- syscall.SIGTERM
+	cancel()
 
 	select {
 	case err := <-errCh:
@@ -30,21 +32,24 @@ func TestRunGracefully_CleanShutdownOnSIGTERM(t *testing.T) {
 			t.Fatalf("expected clean shutdown, got: %v", err)
 		}
 	case <-time.After(6 * time.Second):
-		t.Fatal("server did not shut down within the expected time")
+		t.Fatal("server did not shut down in time")
 	}
 }
 
-func TestRunGracefully_InFlightRequestsComplete(t *testing.T) {
+func TestRun_GracefulShutdown_InFlightRequestsComplete(t *testing.T) {
 	app := NewRouter()
 	app.GET("/slow", func(c *Context) {
 		time.Sleep(400 * time.Millisecond)
 		c.String(http.StatusOK, "done")
 	})
 
-	quit := make(chan os.Signal, 1)
+	ctx, cancel := context.WithCancel(context.Background())
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- app.runGracefully(":19002", ShutdownConfig{Timeout: 5 * time.Second}, quit)
+		errCh <- app.Run(":19002", RunConfig{
+			GracefulTimeout: 5 * time.Second,
+			BaseContext:     ctx,
+		})
 	}()
 
 	waitForServer(t, "http://localhost:19002/slow")
@@ -64,7 +69,7 @@ func TestRunGracefully_InFlightRequestsComplete(t *testing.T) {
 	}()
 
 	time.Sleep(80 * time.Millisecond)
-	quit <- syscall.SIGTERM
+	cancel()
 
 	select {
 	case code := <-requestDone:
@@ -87,17 +92,20 @@ func TestRunGracefully_InFlightRequestsComplete(t *testing.T) {
 	}
 }
 
-func TestRunGracefully_TimeoutEnforced(t *testing.T) {
+func TestRun_GracefulShutdown_TimeoutEnforced(t *testing.T) {
 	app := NewRouter()
 	app.GET("/hang", func(c *Context) {
 		time.Sleep(10 * time.Second)
 		c.String(http.StatusOK, "too late")
 	})
 
-	quit := make(chan os.Signal, 1)
+	ctx, cancel := context.WithCancel(context.Background())
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- app.runGracefully(":19003", ShutdownConfig{Timeout: 200 * time.Millisecond}, quit)
+		errCh <- app.Run(":19003", RunConfig{
+			GracefulTimeout: 200 * time.Millisecond,
+			BaseContext:     ctx,
+		})
 	}()
 
 	waitForServer(t, "http://localhost:19003/hang")
@@ -105,40 +113,36 @@ func TestRunGracefully_TimeoutEnforced(t *testing.T) {
 	go http.Get("http://localhost:19003/hang") //nolint:errcheck
 
 	time.Sleep(80 * time.Millisecond)
-	quit <- syscall.SIGTERM
+	cancel()
 
 	select {
 	case err := <-errCh:
 		if err == nil {
-			t.Fatal("expected a timeout error, got nil")
+			t.Fatal("expected timeout error, got nil")
 		}
 	case <-time.After(3 * time.Second):
-		t.Fatal("server did not respect the shutdown timeout deadline")
+		t.Fatal("server did not respect the shutdown timeout")
 	}
 }
 
-func TestRunGracefully_DefaultTimeout(t *testing.T) {
+func TestRun_PlainBehaviorWithoutConfig(t *testing.T) {
 	app := NewRouter()
 	app.GET("/ping", func(c *Context) {
 		c.String(http.StatusOK, "pong")
 	})
 
-	quit := make(chan os.Signal, 1)
-	errCh := make(chan error, 1)
-	go func() {
-		errCh <- app.runGracefully(":19004", ShutdownConfig{}, quit)
-	}()
+	go app.Run(":19004") //nolint:errcheck
 
 	waitForServer(t, "http://localhost:19004/ping")
-	quit <- syscall.SIGTERM
 
-	select {
-	case err := <-errCh:
-		if err != nil {
-			t.Fatalf("unexpected error with default timeout: %v", err)
-		}
-	case <-time.After(12 * time.Second):
-		t.Fatal("server did not exit with default timeout applied")
+	resp, err := http.Get("http://localhost:19004/ping")
+	if err != nil {
+		t.Fatalf("request failed: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200, got %d", resp.StatusCode)
 	}
 }
 
