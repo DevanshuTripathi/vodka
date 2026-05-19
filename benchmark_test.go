@@ -28,6 +28,22 @@ func BenchmarkDeepParam(b *testing.B) {
 	runReq(b, app, http.MethodGet, "/api/v1/projects/vodka/user/123/objective/test/comment/67")
 }
 
+func BenchmarkMiddlewareChain(b *testing.B) {
+	app := NewRouter()
+
+	for i := 0; i < 10; i++ {
+		app.Use(func(c *Context) {
+			c.Next()
+		})
+	}
+
+	app.GET("/test", func(c *Context) {
+		c.String(200, "tested")
+	})
+
+	runReq(b, app, http.MethodGet, "/test")
+}
+
 // Mock Writer Struct to create mock requests for benchmarking
 type mockWriter struct {
 	headers http.Header
