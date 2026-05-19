@@ -65,12 +65,6 @@ func (rg *RouterGroup) Group(prefix string, middlewares ...HandlerFunc) *RouterG
 func (rg *RouterGroup) Use(middlewares ...HandlerFunc) {
 	rg.middlewares = append(rg.middlewares, middlewares...)
 }
-
-// Runs the http server
-	return http.ListenAndServe(addr, e)
-}
-
-// Serve Static files
 func (rg *RouterGroup) Static(relativePath string, root string) {
 	urlPattern := path.Join(relativePath, "/*filepath")
 
