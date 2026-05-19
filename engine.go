@@ -14,7 +14,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
 )
-
 type RouterGroup struct {
 	prefix      string
 	middlewares []HandlerFunc
@@ -23,10 +22,8 @@ type RouterGroup struct {
 
 // httprouter wrapper
 type Engine struct {
-	router     *httprouter.Router
-	WSConfig   *WSConfig
-	server     *http.Server  // graceful shutdown — Issue #9
-	shutdownCh chan struct{} // graceful shutdown — Issue #9
+	router   *httprouter.Router
+	WSConfig *WSConfig
 	*RouterGroup
 }
 
@@ -35,10 +32,8 @@ func NewRouter() *Engine {
 	router := httprouter.New()
 	router.HandleOPTIONS = false
 	engine := &Engine{
-		router:     router,
-		WSConfig:   DefaultWSConfig(),
-		shutdownCh: make(chan struct{}), // graceful shutdown — Issue #9
-	}
+		router:   router,
+	WSConfig: DefaultWSConfig(),}
 
 	engine.RouterGroup = &RouterGroup{
 		prefix:      "",
@@ -72,14 +67,6 @@ func (rg *RouterGroup) Use(middlewares ...HandlerFunc) {
 }
 
 // Runs the http server
-func (e *Engine) Run(addr string) error {
-	if addr == "" {
-		addr = ":8080"
-	}
-
-	log.Printf(Green+"Pouring Vodka on %s\n"+Reset, addr)
-
-	// Using net/http
 	return http.ListenAndServe(addr, e)
 }
 
@@ -295,16 +282,54 @@ func (rg *RouterGroup) WS(relativePath string, handler WSHandlerFunc) {
 // Graceful Shutdown — Issue #9
 // ─────────────────────────────────────────────
 
-func (e *Engine) RunGraceful(addr string, timeout time.Duration) error {
+// RunConfig holds optional configuration for app.Run.
+// Pass it to enable graceful shutdown with signal handling and request draining.
+//
+// Usage:
+//
+//	app.Run(":8080", vodka.RunConfig{
+//	    GracefulTimeout: 10 * time.Second,
+//	})
+type RunConfig struct {
+	Addr            string          // overrides the addr argument if set
+	GracefulTimeout time.Duration   // how long to wait for in-flight requests; 0 = plain run
+	BaseContext     context.Context // cancelling this context triggers graceful shutdown (useful in tests)
+}
+
+// Run starts the HTTP server.
+// Pass a RunConfig to enable graceful shutdown on SIGINT / SIGTERM.
+// Without a config it behaves exactly as before.
+//
+//	// plain (original behavior)
+//	app.Run(":8080")
+//
+//	// with graceful shutdown
+//	app.Run(":8080", vodka.RunConfig{GracefulTimeout: 10 * time.Second})
+func (e *Engine) Run(addr string, cfgs ...RunConfig) error {
 	if addr == "" {
 		addr = ":8080"
+	}
+
+	// No config or zero timeout → original behavior, no changes
+	if len(cfgs) == 0 || cfgs[0].GracefulTimeout == 0 {
+		log.Printf(Green+"Pouring Vodka on %s\n"+Reset, addr)
+		return http.ListenAndServe(addr, e)
+	}
+
+	cfg := cfgs[0]
+	if cfg.Addr != "" {
+		addr = cfg.Addr
+	}
+
+	baseCtx := cfg.BaseContext
+	if baseCtx == nil {
+		baseCtx = context.Background()
 	}
 
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: e,
 	}
-	e.server = srv
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -318,40 +343,24 @@ func (e *Engine) RunGraceful(addr string, timeout time.Duration) error {
 		}
 	}()
 
-	// Block until OS signal, programmatic shutdown, or server error
+	// Block until OS signal, context cancellation, or server error
 	select {
 	case err := <-serverErr:
 		return err
 	case sig := <-quit:
 		log.Printf(Yellow+"[Vodka] Signal received: %v — draining requests...\n"+Reset, sig)
-	case <-e.shutdownCh: // triggered by Shutdown()
-		log.Printf(Yellow + "[Vodka] Programmatic shutdown — draining requests...\n" + Reset)
+	case <-baseCtx.Done():
+		log.Printf(Yellow+"[Vodka] Shutdown triggered — draining requests...\n"+Reset)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.GracefulTimeout)
 	defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := srv.Shutdown(shutdownCtx); err != nil {
 		log.Printf(Red+"[Vodka] Forced shutdown after timeout: %v\n"+Reset, err)
 		return err
 	}
 
-	log.Printf(Green + "[Vodka] Server shut down cleanly.\n" + Reset)
+	log.Printf(Green+"[Vodka] Server shut down cleanly.\n"+Reset)
 	return nil
-}
-
-// Shutdown gracefully stops the server programmatically.
-// Useful for testing without needing OS signals.
-func (e *Engine) Shutdown(ctx context.Context) error {
-	if e.server == nil {
-		return nil
-	}
-	// Signal RunGraceful's select to unblock
-	select {
-	case <-e.shutdownCh:
-		// already closed, do nothing
-	default:
-		close(e.shutdownCh)
-	}
-	return e.server.Shutdown(ctx)
 }
