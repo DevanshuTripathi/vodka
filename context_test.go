@@ -1,6 +1,8 @@
 package vodka
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -385,5 +387,54 @@ func TestParamAndQueryHelpersViaRouter(t *testing.T) {
 	}
 	if w.Body.String() != "7" {
 		t.Fatalf("expected body 7, got %q", w.Body.String())
+	}
+}
+
+func TestBindJSON(t *testing.T) {
+	type User struct {
+		Username string `json:"username"`
+		Age      int8   `json:"age"`
+	}
+
+	app := DefaultRouter()
+
+	app.POST("/test", func(c *Context) {
+		var user User
+
+		c.BindJSON(&user)
+
+		if user.Username != "blufftunic" {
+			t.Errorf("got %s, expected blufftunic", user.Username)
+		}
+
+		if user.Age != 20 {
+			t.Errorf("got %d, expected blufftunic", user.Age)
+		}
+
+		c.JSON(200, M{
+			"message": "success",
+		})
+	})
+
+	body, _ := json.Marshal(M{
+		"username": "blufftunic",
+		"age":      20,
+	})
+
+	req := httptest.NewRequest(http.MethodPost, "/test", bytes.NewBuffer(body))
+	w := httptest.NewRecorder()
+
+	app.ServeHTTP(w, req)
+
+	if w.Code != 200 {
+		t.Errorf("Wrong Status Code: got %d, expected %d", w.Code, 200)
+	}
+
+	var response M
+
+	json.Unmarshal(w.Body.Bytes(), &response)
+
+	if response["message"] != "success" {
+		t.Errorf("got %s, expected success", response["message"])
 	}
 }
