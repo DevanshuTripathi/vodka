@@ -128,13 +128,14 @@ func (rg *RouterGroup) addRoute(method string, comp string, handler HandlerFunc)
 	handlers = append(handlers, handler)
 
 	rg.engine.router.Handle(method, absolutePath, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-		c := &Context{
-			Writer:   w,
-			Request:  r,
-			Params:   params,
-			handlers: handlers,
-			index:    -1,
-		}
+
+		c := contextPool.Get().(*Context)
+		c.Initialize(w, r, params, handlers)
+
+		defer func() {
+			c.Reset()
+			contextPool.Put(c)
+		}()
 
 		c.Next()
 	})

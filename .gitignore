@@ -1,1 +1,4 @@
 tmp/
+*.out
+*.test
+*.test.exe

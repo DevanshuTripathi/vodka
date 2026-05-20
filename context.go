@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-    "strconv"
+	"strconv"
+	"sync"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/julienschmidt/httprouter"
 )
@@ -42,6 +44,70 @@ type Context struct {
 	index      int8                // tracks current step
 	queryCache url.Values          // Caches query parameter values for fast access
 	isAborted  bool
+}
+
+var contextPool = sync.Pool{
+	New: func() interface{} {
+		return &Context{}
+	},
+}
+
+// helper function to reset Context
+func (c *Context) Reset() {
+	// Delete Old keys and still be able to resue the Keys map without re-allocation
+	for key := range c.Keys {
+		delete(c.Keys, key)
+	}
+	c.Writer = nil
+	c.Request = nil
+	c.Params = nil
+	c.handlers = nil
+	c.index = -1
+	c.queryCache = nil
+	c.Errors = nil
+	c.isAborted = false
+}
+
+// helper to initialize Context
+func (c *Context) Initialize(w http.ResponseWriter, r *http.Request, p httprouter.Params, handlers []HandlerFunc) {
+	c.Writer = w
+	c.Request = r
+	c.Params = p
+	c.handlers = handlers
+	c.index = -1
+}
+
+// helper function to copy context for using it outisde the request lifecycle
+func (c *Context) Copy() *Context {
+	cp := &Context{
+		Request:   c.Request,
+		index:     c.index,
+		isAborted: c.isAborted,
+	}
+
+	if c.Params != nil {
+		cp.Params = make(httprouter.Params, len(c.Params))
+		copy(cp.Params, c.Params)
+	}
+
+	if c.handlers != nil {
+		cp.handlers = make([]HandlerFunc, len(c.handlers))
+		copy(cp.handlers, c.handlers)
+	}
+
+	if c.Keys != nil {
+		cp.Keys = make(map[string]any, len(c.Keys))
+		for k, v := range c.Keys {
+			cp.Keys[k] = v
+		}
+	}
+
+	if c.Errors != nil {
+		cp.Errors = make([]*VodkaError, len(c.Errors))
+		copy(cp.Errors, c.Errors)
+	}
+
+	return cp
 }
 
 // Abort http request
@@ -201,7 +267,7 @@ func (c *Context) QueryInt(key string) (int, error) {
 	}
 	return val, nil
 }
- 
+
 // QueryBool returns query param as bool or an error
 func (c *Context) QueryBool(key string) (bool, error) {
 	val, err := strconv.ParseBool(c.Query(key))
@@ -210,7 +276,7 @@ func (c *Context) QueryBool(key string) (bool, error) {
 	}
 	return val, nil
 }
- 
+
 // ParamInt returns URL param as int or an error
 func (c *Context) ParamInt(key string) (int, error) {
 	val, err := strconv.Atoi(c.Param(key))
@@ -219,7 +285,7 @@ func (c *Context) ParamInt(key string) (int, error) {
 	}
 	return val, nil
 }
- 
+
 // ParamBool returns URL param as bool or an error
 func (c *Context) ParamBool(key string) (bool, error) {
 	val, err := strconv.ParseBool(c.Param(key))
@@ -227,4 +293,37 @@ func (c *Context) ParamBool(key string) (bool, error) {
 		return false, fmt.Errorf(Red+"param %q is not a valid bool"+Reset, key)
 	}
 	return val, nil
+}
+
+// SetCookie writes a cookie to the response.
+// maxAge is in seconds. Use 0 for session cookie, negative to delete.
+func (c *Context) SetCookie(name, value string, maxAge int) {
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     name,
+		Value:    value,
+		MaxAge:   maxAge,
+		Path:     "/",
+		HttpOnly: true,
+	})
+}
+
+// Cookie returns the value of the named cookie from the request.
+// Returns an error if the cookie is not found.
+func (c *Context) Cookie(name string) (string, error) {
+	cookie, err := c.Request.Cookie(name)
+	if err != nil {
+		return "", err
+	}
+	return cookie.Value, nil
+}
+
+// ClearCookie deletes a cookie by setting its MaxAge to -1.
+func (c *Context) ClearCookie(name string) {
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     name,
+		Value:    "",
+		MaxAge:   -1,
+		Path:     "/",
+		HttpOnly: true,
+	})
 }
