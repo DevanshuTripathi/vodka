@@ -23,10 +23,11 @@ func main() {
 		c.JSON(http.StatusOK, vodka.M{"message": "finished"})
 	})
 
-	// Pass RunConfig to enable graceful shutdown.
+	// Pass RunConfig with GracefulShutdown: true to enable graceful shutdown.
 	// Without RunConfig, Run behaves exactly as before.
 	if err := app.Run(":8080", vodka.RunConfig{
-		GracefulTimeout: 15 * time.Second,
+		GracefulShutdown: true,
+		GracefulTimeout:  15 * time.Second,
 	}); err != nil {
 		log.Fatal("shutdown error:", err)
 	}
