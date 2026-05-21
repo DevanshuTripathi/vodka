@@ -106,7 +106,7 @@ func RateLimiter(vrl *VodkaRateLimiter) vodka.HandlerFunc {
 		limiter := vrl.getVisitor(ip)
 
 		if !limiter.allow() {
-			c.Error(429, errors.New(vodka.Red+"Rate Limit Exceeded"+vodka.Reset))
+			c.Error(429, errors.New("rate limit exceeded"))
 		}
 
 		c.Next()

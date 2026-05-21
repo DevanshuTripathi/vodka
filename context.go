@@ -263,7 +263,7 @@ func (c *Context) IP() string {
 func (c *Context) QueryInt(key string) (int, error) {
 	val, err := strconv.Atoi(c.Query(key))
 	if err != nil {
-		return 0, fmt.Errorf(Red+"query param %q is not a valid int"+Reset, key)
+		return 0, fmt.Errorf("query param %q is not a valid int", key)
 	}
 	return val, nil
 }
@@ -272,7 +272,7 @@ func (c *Context) QueryInt(key string) (int, error) {
 func (c *Context) QueryBool(key string) (bool, error) {
 	val, err := strconv.ParseBool(c.Query(key))
 	if err != nil {
-		return false, fmt.Errorf(Red+"query param %q is not a valid bool"+Reset, key)
+		return false, fmt.Errorf("query param %q is not a valid bool", key)
 	}
 	return val, nil
 }
@@ -281,7 +281,7 @@ func (c *Context) QueryBool(key string) (bool, error) {
 func (c *Context) ParamInt(key string) (int, error) {
 	val, err := strconv.Atoi(c.Param(key))
 	if err != nil {
-		return 0, fmt.Errorf(Red+"param %q is not a valid int"+Reset, key)
+		return 0, fmt.Errorf("param %q is not a valid int", key)
 	}
 	return val, nil
 }
@@ -290,7 +290,7 @@ func (c *Context) ParamInt(key string) (int, error) {
 func (c *Context) ParamBool(key string) (bool, error) {
 	val, err := strconv.ParseBool(c.Param(key))
 	if err != nil {
-		return false, fmt.Errorf(Red+"param %q is not a valid bool"+Reset, key)
+		return false, fmt.Errorf("param %q is not a valid bool", key)
 	}
 	return val, nil
 }

@@ -3,8 +3,6 @@ package mixers
 import (
 	"fmt"
 	"time"
-
-	"github.com/DevanshuTripathi/vodka"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -13,7 +11,7 @@ func JWTValidator(secretKey string) TokenValidator {
 	return func(tokenString string) (any, bool) {
 		token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf(vodka.Red+"unexpected signing method: %v"+vodka.Reset, t.Header["alg"])
+				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 			}
 
 			return []byte(secretKey), nil
