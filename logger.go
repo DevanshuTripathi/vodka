@@ -29,6 +29,9 @@ func Logger() HandlerFunc {
 		rw := &responseWriter{ResponseWriter: c.Writer}
 		c.Writer = rw
 		c.Next()
+		if rw.status == 0 {
+			rw.status = http.StatusOK
+		}
 		log.Printf(
 			Blue+"%s %s %d %s"+Reset,
 			c.Request.Method,
