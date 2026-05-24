@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"net"
 	"net/http"
@@ -238,7 +239,9 @@ func (c *Context) BindJSON(obj any) error {
 func (c *Context) JSON(statusCode int, obj any) {
 	c.Writer.Header().Set("Content-Type", "application/json")
 	c.Writer.WriteHeader(statusCode)
-	json.NewEncoder(c.Writer).Encode(obj)
+	if err := json.NewEncoder(c.Writer).Encode(obj); err != nil {
+		log.Printf("vodka: JSON encode error: %v", err)
+	}
 }
 
 // Stores Errors in the context to be handled by ErrorHandler Middleware

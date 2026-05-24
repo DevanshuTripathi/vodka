@@ -214,6 +214,7 @@ func (rg *RouterGroup) SSE(relativePath string, handler SSEHandlerFunc) {
 				Params:   params,
 				handlers: middlewares,
 				index:    -1,
+				engine:   rg.engine,
 			}
 			c.Next()
 			if c.isAborted {
@@ -271,6 +272,7 @@ func (rg *RouterGroup) WS(relativePath string, handler WSHandlerFunc) {
 				Params:   params,
 				handlers: middlewares,
 				index:    -1,
+				engine:   rg.engine,
 			}
 			c.Next()
 			if c.isAborted {
