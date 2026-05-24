@@ -133,19 +133,35 @@ if !minimal {
 }
 
 	choice := 0
-	if minimal {
-	choice = 0
-	fmt.Println(Cyan + "Using minimal scaffold..." + Reset)
-	} else {
 
-	switch result {
-	case "Vite + React":
-		choice = 1
-	case "NextJS":
-		choice = 2
-	case "Only Vodka Backend (Go)":
-		choice = 3
-	}
+if minimal {
+    fmt.Println(Cyan + "Using minimal scaffold..." + Reset)
+
+    prompt := promptui.Select{
+        Label: "Choose minimal project type",
+        Items: []string{
+            "Vite + React",
+            "NextJS",
+            "Only Vodka Backend (Go)",
+        },
+    }
+
+    _, resultTemp, err := prompt.Run()
+    if err != nil {
+        fmt.Println(Red + "Selection cancelled" + Reset)
+        return
+    }
+
+    result = resultTemp
+}
+
+switch result {
+case "Vite + React":
+    choice = 1
+case "NextJS":
+    choice = 2
+case "Only Vodka Backend (Go)":
+    choice = 3
 }
 	fmt.Printf(Cyan+"Distilling your project: %s...\n"+Reset, name)
 
