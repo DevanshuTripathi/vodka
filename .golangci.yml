@@ -17,3 +17,11 @@ issues:
     - path: engine\.go
       linters:
         - errcheck
+    - path: cmd/vodka/main\.go
+      source: os\.Mkdir\(
+      linters:
+        - errcheck
+    - path: cmd/vodka/main\.go
+      source: appCmd\.Wait\(
+      linters:
+        - errcheck
