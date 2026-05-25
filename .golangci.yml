@@ -1,0 +1,21 @@
+run:
+  timeout: 5m
+  tests: false
+  skip-dirs:
+    - examples
+
+linters:
+  disable-all: true
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+
+issues:
+  exclude-rules:
+    - path: context\.go
+      linters:
+        - errcheck
+    - path: engine\.go
+      linters:
+        - errcheck
