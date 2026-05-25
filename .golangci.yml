@@ -33,3 +33,7 @@ issues:
       source: os\.WriteFile\(
       linters:
         - errcheck
+    - path: cmd/vodka/main\.go
+      source: os\.MkdirAll\(
+      linters:
+        - errcheck
