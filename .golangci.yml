@@ -1,8 +1,6 @@
 run:
   timeout: 5m
   tests: false
-  skip-dirs:
-    - examples
 
 linters:
   disable-all: true
