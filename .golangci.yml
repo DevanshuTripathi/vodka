@@ -25,3 +25,11 @@ issues:
       source: appCmd\.Wait\(
       linters:
         - errcheck
+    - path: cmd/vodka/main\.go
+      source: appCmd\.Process\.Kill\(
+      linters:
+        - errcheck
+    - path: cmd/vodka/main\.go
+      source: os\.WriteFile\(
+      linters:
+        - errcheck
