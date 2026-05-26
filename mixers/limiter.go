@@ -26,6 +26,9 @@ type VodkaRateLimiter struct {
 	mu       sync.Mutex
 	rate     float64
 	burst    int
+
+	done chan struct{}
+	once sync.Once
 }
 
 func newLimiter(r float64, b int) *limiter {
@@ -65,6 +68,7 @@ func NewRateLimiter(r float64, b int) *VodkaRateLimiter {
 		visitors: make(map[string]*visitor),
 		rate:     r,
 		burst:    b,
+		done: make(chan struct{}),
 	}
 
 	go vrl.cleanup()
@@ -72,16 +76,31 @@ func NewRateLimiter(r float64, b int) *VodkaRateLimiter {
 }
 
 func (vrl *VodkaRateLimiter) cleanup() {
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+	
 	for {
-		time.Sleep(time.Minute)
-		vrl.mu.Lock()
-		for ip, v := range vrl.visitors {
-			if time.Since(v.lastSeen) > 5*time.Minute {
-				delete(vrl.visitors, ip)
+		select{
+		case <- ticker.C:
+			
+			vrl.mu.Lock()
+			for ip, v := range vrl.visitors {
+				if time.Since(v.lastSeen) > 5*time.Minute {
+					delete(vrl.visitors, ip)
+				}
 			}
+			vrl.mu.Unlock()
+
+		case <- vrl.done:
+			return
 		}
-		vrl.mu.Unlock()
 	}
+}
+
+func (vrl *VodkaRateLimiter ) Stop(){
+	vrl.once.Do(func() {
+		close(vrl.done)
+	})
 }
 
 func (vrl *VodkaRateLimiter) getVisitor(ip string) *limiter {
