@@ -59,9 +59,7 @@ var contextPool = sync.Pool{
 // helper function to reset Context
 func (c *Context) Reset() {
 	// Delete Old keys and still be able to resue the Keys map without re-allocation
-	for key := range c.Keys {
-		delete(c.Keys, key)
-	}
+	c.Keys = nil
 	c.Writer = nil
 	c.Request = nil
 	c.Params = nil

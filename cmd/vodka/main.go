@@ -51,11 +51,18 @@ func main() {
 
 	switch os.Args[1] {
 	case "create":
-		if len(os.Args) < 3 {
-			fmt.Println(Red + "Usage: vodka create <project-name>" + Reset)
-			return
-		}
-		createProject(os.Args[2])
+	if len(os.Args) < 3 {
+		fmt.Println(Red + "Usage: vodka create <project-name> [--minimal]" + Reset)
+		return
+	}
+
+	minimal := false
+
+	if len(os.Args) >= 4 && os.Args[3] == "--minimal" {
+		minimal = true
+	}
+
+	createProject(os.Args[2], minimal)
 
 	case "run":
 		if len(os.Args) >= 3 && os.Args[2] == "dev" {
@@ -103,8 +110,11 @@ func runDev() {
 	watchBackend()
 }
 
-func createProject(name string) {
-		prompt := promptui.Select{
+func createProject(name string, minimal bool) {
+		var result string
+
+if !minimal {
+	prompt := promptui.Select{
 		Label: "Choose project type",
 		Items: []string{
 			"Vite + React",
@@ -113,22 +123,46 @@ func createProject(name string) {
 		},
 	}
 
-	_, result, err := prompt.Run()
+	_, resultTemp, err := prompt.Run()
 	if err != nil {
 		fmt.Println(Red + "Selection cancelled" + Reset)
 		return
 	}
 
+	result = resultTemp
+}
+
 	choice := 0
 
-	switch result {
-	case "Vite + React":
-		choice = 1
-	case "NextJS":
-		choice = 2
-	case "Only Vodka Backend (Go)":
-		choice = 3
-	}
+if minimal {
+    fmt.Println(Cyan + "Using minimal scaffold..." + Reset)
+
+    prompt := promptui.Select{
+        Label: "Choose minimal project type",
+        Items: []string{
+            "Vite + React",
+            "NextJS",
+            "Only Vodka Backend (Go)",
+        },
+    }
+
+    _, resultTemp, err := prompt.Run()
+    if err != nil {
+        fmt.Println(Red + "Selection cancelled" + Reset)
+        return
+    }
+
+    result = resultTemp
+}
+
+switch result {
+case "Vite + React":
+    choice = 1
+case "NextJS":
+    choice = 2
+case "Only Vodka Backend (Go)":
+    choice = 3
+}
 	fmt.Printf(Cyan+"Distilling your project: %s...\n"+Reset, name)
 
 	os.Mkdir(name, 0755)
@@ -145,7 +179,25 @@ func createProject(name string) {
 	case 2:
 		corsURL = "http://localhost:3000"
 	}
-	mainGoContent := `package main
+	mainGoContent := ""
+
+if minimal {
+	mainGoContent = `package main
+
+import "github.com/DevanshuTripathi/vodka"
+
+func main() {
+	app := vodka.DefaultRouter()
+
+	app.GET("/", func(c *vodka.Context) {
+		c.String(200, "Hello from Vodka!")
+	})
+
+	app.Run(":8080")
+}
+`
+} else {
+	mainGoContent = `package main
 
 import (
 	"github.com/DevanshuTripathi/vodka"
@@ -153,7 +205,7 @@ import (
 )
 
 func main() {
-	app := vodka.DefaultRouter() // Creates a Default Router with Logger and Recovery Middleware
+	app := vodka.DefaultRouter()
 
 	allowedOrigins := []string{"` + corsURL + `"}
 
@@ -164,6 +216,7 @@ func main() {
 	app.Run(":8080")
 }
 `
+}
 	routesContent := `package routes
 
 import (
@@ -193,12 +246,15 @@ func Hello(c *vodka.Context) {
 	c.String(200, "Hello "+ name +"!")
 }
 `
+	os.WriteFile(filepath.Join(name, "main.go"), []byte(mainGoContent), 0644)
+
+if !minimal {
 	os.MkdirAll(filepath.Join(name, "controllers"), 0755)
 	os.MkdirAll(filepath.Join(name, "routes"), 0755)
 
-	os.WriteFile(filepath.Join(name, "main.go"), []byte(mainGoContent), 0644)
 	os.WriteFile(filepath.Join(name, "controllers", "ping.go"), []byte(controllersContent), 0644)
 	os.WriteFile(filepath.Join(name, "routes", "routes.go"), []byte(routesContent), 0644)
+}
 
 	switch choice {
 	case 1:
@@ -245,6 +301,11 @@ func Hello(c *vodka.Context) {
 		fmt.Println(Green + "Backend-only Vodka project created!" + Reset)
 
 	default:
+		if minimal {
+			fmt.Println(Green + "Minimal Vodka project created!" + Reset)
+			return
+		}
+
 		fmt.Println(Red + "Invalid choice! Defaulting to Vite + React." + Reset)
 
 		if runtime.GOOS == "windows" {
@@ -253,7 +314,6 @@ func Hello(c *vodka.Context) {
 			runCmd(name, "npm", "create", "vite@latest", "frontend", "--", "--template", "react")
 		}
 	}
-
 	fmt.Printf(Green+"\nProject %s is ready!\n"+Reset, name)
 
 	switch choice {

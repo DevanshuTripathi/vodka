@@ -1,6 +1,7 @@
 package mixers
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/DevanshuTripathi/vodka"
@@ -16,9 +17,9 @@ func BearerAuth(ctxKey string, validator TokenValidator) vodka.HandlerFunc {
 	return func(c *vodka.Context) {
 		authHeader := c.Request.Header.Get("Authorization")
 
+		// c.Error() routes through ErrorHandler and calls Abort internally
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-			c.JSON(401, vodka.M{"error": "Unauthorized: Missing or malformed token"})
-			c.Abort()
+			c.Error(401, errors.New("Unauthorized: Missing or malformed token"))
 			return
 		}
 
@@ -27,8 +28,7 @@ func BearerAuth(ctxKey string, validator TokenValidator) vodka.HandlerFunc {
 		data, isValid := validator(providedToken)
 
 		if !isValid {
-			c.JSON(401, vodka.M{"error": "Unauthorized: Invalid token"})
-			c.Abort()
+			c.Error(401, errors.New("Unauthorized: Invalid token"))
 			return
 		}
 

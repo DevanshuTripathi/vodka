@@ -129,7 +129,29 @@ func (e *Engine) ServeSPA(root string) {
 
 // ServeHTTP intercepts every request before it hits the router
 func (e *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	if req.Method == http.MethodOptions {
+		e.handlePreFlight(w, req)
+		return
+	}
 	e.router.ServeHTTP(w, req)
+}
+
+func (e *Engine) handlePreFlight(w http.ResponseWriter, req *http.Request) {
+	c := contextPool.Get().(*Context)
+	// Passing e.middlewares so global middlewares like AllowCORS execute
+	c.Initialize(w, req, nil, e.middlewares, e)
+
+	defer func() {
+		c.Reset()
+		contextPool.Put(c)
+	}()
+
+	c.Next()
+
+	// If the middleware didn't abort (e.g. no CORS middleware), fallback to 204
+	if !c.isAborted {
+		c.Writer.WriteHeader(http.StatusNoContent)
+	}
 }
 
 func (rg *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
@@ -140,6 +162,21 @@ func (rg *RouterGroup) addRoute(method string, comp string, handler HandlerFunc)
 	handlers = append(handlers, handler)
 
 	rg.engine.router.Handle(method, absolutePath, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+
+		if len(handlers) == 1 {
+			c := contextPool.Get().(*Context)
+
+			c.Writer = w
+			c.Request = r
+			c.Params = params
+			c.engine = rg.engine
+
+			handlers[0](c)
+
+			c.Reset()
+			contextPool.Put(c)
+			return
+		}
 
 		c := contextPool.Get().(*Context)
 		c.Initialize(w, r, params, handlers, rg.engine)

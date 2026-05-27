@@ -7,13 +7,15 @@ import (
 )
 
 type responseWriter struct {
-	http.ResponseWriter
-	status int
+    http.ResponseWriter
+    status      int
+    wroteHeader bool
 }
 
 func (rw *responseWriter) WriteHeader(code int) {
-	rw.status = code
-	rw.ResponseWriter.WriteHeader(code)
+    rw.status = code
+    rw.wroteHeader = true
+    rw.ResponseWriter.WriteHeader(code)
 }
 
 func Logger() HandlerFunc {
