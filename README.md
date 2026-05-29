@@ -205,16 +205,6 @@ vodka create my-app --location ./projects --minimal
 
 ---
 
-## Create a Minimal App
-
-```bash
-vodka create my-app --minimal
-```
-
-Scaffolds only the Go backend without controllers or routes directories.
-
----
-
 ## Generated Project Structure
 
 ```text
