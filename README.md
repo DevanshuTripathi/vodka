@@ -148,7 +148,26 @@ Add the following directory to Environment Variables:
 ## Create a Full-Stack App
 
 ```bash
+vodka create <project-name> [location] [--minimal]
+```
+
+Basic usage:
+
+```bash
 vodka create my-app
+```
+
+You can also specify a target directory to scaffold the project into:
+
+```bash
+vodka create my-app /path/to/parent-dir
+```
+
+The project will be created at `<location>/<name>` (e.g. `/path/to/parent-dir/my-app`). If no location is provided, the current directory is used.
+
+```bash
+vodka create my-app --minimal
+vodka create my-app /path/to/dir --minimal
 ```
 
 This generates:
@@ -157,6 +176,7 @@ This generates:
 - A React + Vite frontend
 - Preconfigured development workflow
 - SPA support for production deployments
+
 
 ---
 

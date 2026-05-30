@@ -51,18 +51,24 @@ func main() {
 
 	switch os.Args[1] {
 	case "create":
-	if len(os.Args) < 3 {
-		fmt.Println(Red + "Usage: vodka create <project-name> [--minimal]" + Reset)
-		return
-	}
+		if len(os.Args) < 3 {
+			fmt.Println(Red + "Usage: vodka create <project-name> [location] [--minimal]" + Reset)
+			return
+		}
 
-	minimal := false
+		name := os.Args[2]
+		location := "."
+		minimal := false
 
-	if len(os.Args) >= 4 && os.Args[3] == "--minimal" {
-		minimal = true
-	}
+		for i := 3; i < len(os.Args); i++ {
+			if os.Args[i] == "--minimal" {
+				minimal = true
+			} else if !strings.HasPrefix(os.Args[i], "--") {
+				location = os.Args[i]
+			}
+		}
 
-	createProject(os.Args[2], minimal)
+		createProject(name, location, minimal)
 
 	case "run":
 		if len(os.Args) >= 3 && os.Args[2] == "dev" {
@@ -75,7 +81,7 @@ func main() {
 
 	default:
 		fmt.Printf(Red+"Unknown command '%s'.\n"+Reset, os.Args[1])
-		fmt.Println(Cyan + "Available commands:" + Reset + "\n  " + Green + "vodka" + Reset + "\n  " + Green + "vodka create <name>" + Reset + "\n  " + Green + "vodka run dev" + Reset)
+		fmt.Println(Cyan + "Available commands:" + Reset + "\n  " + Green + "vodka" + Reset + "\n  " + Green + "vodka create <name> [location]" + Reset + "\n  " + Green + "vodka run dev" + Reset)
 	}
 }
 
@@ -110,66 +116,67 @@ func runDev() {
 	watchBackend()
 }
 
-func createProject(name string, minimal bool) {
-		var result string
+func createProject(name string, location string, minimal bool) {
+	projectDir := filepath.Join(location, name)
+	var result string
 
-if !minimal {
-	prompt := promptui.Select{
-		Label: "Choose project type",
-		Items: []string{
-			"Vite + React",
-			"NextJS",
-			"Only Vodka Backend (Go)",
-		},
+	if !minimal {
+		prompt := promptui.Select{
+			Label: "Choose project type",
+			Items: []string{
+				"Vite + React",
+				"NextJS",
+				"Only Vodka Backend (Go)",
+			},
+		}
+
+		_, resultTemp, err := prompt.Run()
+		if err != nil {
+			fmt.Println(Red + "Selection cancelled" + Reset)
+			return
+		}
+
+		result = resultTemp
 	}
-
-	_, resultTemp, err := prompt.Run()
-	if err != nil {
-		fmt.Println(Red + "Selection cancelled" + Reset)
-		return
-	}
-
-	result = resultTemp
-}
 
 	choice := 0
 
-if minimal {
-    fmt.Println(Cyan + "Using minimal scaffold..." + Reset)
+	if minimal {
+		fmt.Println(Cyan + "Using minimal scaffold..." + Reset)
 
-    prompt := promptui.Select{
-        Label: "Choose minimal project type",
-        Items: []string{
-            "Vite + React",
-            "NextJS",
-            "Only Vodka Backend (Go)",
-        },
-    }
+		prompt := promptui.Select{
+			Label: "Choose minimal project type",
+			Items: []string{
+				"Vite + React",
+				"NextJS",
+				"Only Vodka Backend (Go)",
+			},
+		}
 
-    _, resultTemp, err := prompt.Run()
-    if err != nil {
-        fmt.Println(Red + "Selection cancelled" + Reset)
-        return
-    }
+		_, resultTemp, err := prompt.Run()
+		if err != nil {
+			fmt.Println(Red + "Selection cancelled" + Reset)
+			return
+		}
 
-    result = resultTemp
-}
+		result = resultTemp
+	}
 
-switch result {
-case "Vite + React":
-    choice = 1
-case "NextJS":
-    choice = 2
-case "Only Vodka Backend (Go)":
-    choice = 3
-}
+	switch result {
+	case "Vite + React":
+		choice = 1
+	case "NextJS":
+		choice = 2
+	case "Only Vodka Backend (Go)":
+		choice = 3
+	}
 	fmt.Printf(Cyan+"Distilling your project: %s...\n"+Reset, name)
 
-	os.Mkdir(name, 0755)
+	os.MkdirAll(projectDir, 0755)
 
 	fmt.Println(Gray + "Initializing Go backend..." + Reset)
-	runCmd(name, "go", "mod", "init", name)
-	runCmd(name, "go", "get", "github.com/DevanshuTripathi/vodka@latest")
+	runCmd(projectDir, "go", "mod", "init", name)
+	runCmd(projectDir, "go", "get", "github.com/DevanshuTripathi/vodka@latest")
 
 	corsURL := ""
 
@@ -181,8 +188,8 @@ case "Only Vodka Backend (Go)":
 	}
 	mainGoContent := ""
 
-if minimal {
-	mainGoContent = `package main
+	if minimal {
+		mainGoContent = `package main
 
 import "github.com/DevanshuTripathi/vodka"
 
@@ -196,8 +203,8 @@ func main() {
 	app.Run(":8080")
 }
 `
-} else {
-	mainGoContent = `package main
+	} else {
+		mainGoContent = `package main
 
 import (
 	"github.com/DevanshuTripathi/vodka"
@@ -216,7 +223,7 @@ func main() {
 	app.Run(":8080")
 }
 `
-}
+	}
 	routesContent := `package routes
 
 import (
@@ -246,55 +253,55 @@ func Hello(c *vodka.Context) {
 	c.String(200, "Hello "+ name +"!")
 }
 `
-	os.WriteFile(filepath.Join(name, "main.go"), []byte(mainGoContent), 0644)
+	os.WriteFile(filepath.Join(projectDir, "main.go"), []byte(mainGoContent), 0644)
 
-if !minimal {
-	os.MkdirAll(filepath.Join(name, "controllers"), 0755)
-	os.MkdirAll(filepath.Join(name, "routes"), 0755)
+	if !minimal {
+		os.MkdirAll(filepath.Join(projectDir, "controllers"), 0755)
+		os.MkdirAll(filepath.Join(projectDir, "routes"), 0755)
 
-	os.WriteFile(filepath.Join(name, "controllers", "ping.go"), []byte(controllersContent), 0644)
-	os.WriteFile(filepath.Join(name, "routes", "routes.go"), []byte(routesContent), 0644)
-}
+		os.WriteFile(filepath.Join(projectDir, "controllers", "ping.go"), []byte(controllersContent), 0644)
+		os.WriteFile(filepath.Join(projectDir, "routes", "routes.go"), []byte(routesContent), 0644)
+	}
 
 	switch choice {
 	case 1:
-	frontendPrompt := promptui.Select{
-		Label: "Choose frontend type",
-		Items: []string{
-			"React (JavaScript)",
-			"React (TypeScript)",
-		},
-	}
+		frontendPrompt := promptui.Select{
+			Label: "Choose frontend type",
+			Items: []string{
+				"React (JavaScript)",
+				"React (TypeScript)",
+			},
+		}
 
-	_, frontendResult, err := frontendPrompt.Run()
-	if err != nil {
-		fmt.Println(Red + "Selection cancelled" + Reset)
-		return
-	}
+		_, frontendResult, err := frontendPrompt.Run()
+		if err != nil {
+			fmt.Println(Red + "Selection cancelled" + Reset)
+			return
+		}
 
-	template := "react"
+		template := "react"
 
-	if frontendResult == "React (TypeScript)" {
-		template = "react-ts"
-	}
+		if frontendResult == "React (TypeScript)" {
+			template = "react-ts"
+		}
 
-	fmt.Println(Gray + "Spinning up React frontend with Vite..." + Reset)
+		fmt.Println(Gray + "Spinning up React frontend with Vite..." + Reset)
 
-	if runtime.GOOS == "windows" {
-		runCmd(name, "cmd", "/C",
-			"npm create vite@latest frontend -- --template "+template)
-	} else {
-		runCmd(name, "npm", "create", "vite@latest",
-			"frontend", "--", "--template", template)
-	}
+		if runtime.GOOS == "windows" {
+			runCmd(projectDir, "cmd", "/C",
+				"npm create vite@latest frontend -- --template "+template)
+		} else {
+			runCmd(projectDir, "npm", "create", "vite@latest",
+				"frontend", "--", "--template", template)
+		}
 
 	case 2:
 		fmt.Println(Gray + "Creating NextJS project..." + Reset)
 
 		if runtime.GOOS == "windows" {
-			runCmd(name, "cmd", "/C", "npx create-next-app@latest frontend --yes")
+			runCmd(projectDir, "cmd", "/C", "npx create-next-app@latest frontend --yes")
 		} else {
-			runCmd(name, "npx", "create-next-app@latest", "frontend", "--yes")
+			runCmd(projectDir, "npx", "create-next-app@latest", "frontend", "--yes")
 		}
 
 	case 3:
@@ -309,9 +316,9 @@ if !minimal {
 		fmt.Println(Red + "Invalid choice! Defaulting to Vite + React." + Reset)
 
 		if runtime.GOOS == "windows" {
-			runCmd(name, "cmd", "/C", "npm create vite@latest frontend -- --template react")
+			runCmd(projectDir, "cmd", "/C", "npm create vite@latest frontend -- --template react")
 		} else {
-			runCmd(name, "npm", "create", "vite@latest", "frontend", "--", "--template", "react")
+			runCmd(projectDir, "npm", "create", "vite@latest", "frontend", "--", "--template", "react")
 		}
 	}
 	fmt.Printf(Green+"\nProject %s is ready!\n"+Reset, name)
@@ -324,7 +331,7 @@ if !minimal {
 				"  "+Green+"cd frontend && npm install\n"+Reset+
 				"  "+Green+"cd ..\n"+Reset+
 				"  "+Green+"vodka run dev\n"+Reset,
-			name,
+			projectDir,
 		)
 
 	case 2:
@@ -332,7 +339,7 @@ if !minimal {
 			Cyan+"Next steps:\n"+Reset+
 				"  "+Green+"cd %s\n"+Reset+
 				"  "+Green+"vodka run dev\n"+Reset,
-			name,
+			projectDir,
 		)
 
 	case 3:
@@ -340,7 +347,7 @@ if !minimal {
 			Cyan+"Next steps:\n"+Reset+
 				"  "+Green+"cd %s\n"+Reset+
 				"  "+Green+"vodka\n"+Reset,
-			name,
+			projectDir,
 		)
 	}
 }
