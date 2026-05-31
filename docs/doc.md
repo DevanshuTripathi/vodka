@@ -45,9 +45,15 @@ go install github.com/DevanshuTripathi/vodka/cmd/vodka@latest
 ### Create a new project with the Vodka CLI
 
 ```bash
+# For a full stack app
 vodka create myapp
 cd myapp
-vodka run
+vodka run dev
+
+# For a basic Go project
+vodka create myapp
+cd myapp
+vodka
 ```
 
 ### Manually
