@@ -43,8 +43,8 @@ var (
 func main() {
 
 	if len(os.Args) == 1 {
-		fmt.Println(Cyan + banner + Reset)
-		log.Println(Blue + "Vodka Watching for Empty Glasses..." + Reset)
+		fmt.Println(Cyan + banner + Reset)                           // Keeps original text banner
+		printPouringAnimation("Vodka Watching for Empty Glasses...") // Adds our animation
 		watchBackend()
 		return
 	}
@@ -72,8 +72,8 @@ func main() {
 
 	case "run":
 		if len(os.Args) >= 3 && os.Args[2] == "dev" {
-			fmt.Println(Cyan + banner + Reset)
-			log.Println(Blue + "Starting Full-Stack Dev Environment..." + Reset)
+			fmt.Println(Cyan + banner + Reset)                              // Keeps original text banner
+			printPouringAnimation("Starting Full-Stack Dev Environment...") // Adds our animation
 			runDev()
 		} else {
 			fmt.Println(Red + "Usage: vodka run dev" + Reset)
