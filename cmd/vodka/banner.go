@@ -6,158 +6,150 @@ import (
 	"time"
 )
 
-// ANSI colors for the ultimate terminal aesthetic
-const (
-	R = Reset
-	G = Gray
-	L = Cyan
-	W = Gray
-)
-
 func printPouringAnimation(msg string) {
 	frames := []string{
 		// Frame 0: Empty Rocks Glass
 		`                            
                             
-        ` + G + `|                    |` + R + `
-        ` + G + `|                    |` + R + `
-        ` + G + `|                    |` + R + `
-        ` + G + `|                    |` + R + `
-        ` + G + `|                    |` + R + `
-        ` + G + `|                    |` + R + `
-        ` + G + `|                    |` + R + `
-        ` + G + ` \                  / ` + R + `
-        ` + G + `  '----------------'  ` + R,
+        ` + Gray + `|                    |` + Reset + `
+        ` + Gray + `|                    |` + Reset + `
+        ` + Gray + `|                    |` + Reset + `
+        ` + Gray + `|                    |` + Reset + `
+        ` + Gray + `|                    |` + Reset + `
+        ` + Gray + `|                    |` + Reset + `
+        ` + Gray + `|                    |` + Reset + `
+        ` + Gray + ` \                  / ` + Reset + `
+        ` + Gray + `  '----------------'  ` + Reset,
 
 		// Frame 1: Stream pouring
-		`             ` + L + `|  |` + R + `         
-             ` + L + `|  |` + R + `         
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + ` \       ` + L + `|  |` + G + `       / ` + R + `
-        ` + G + `  '----------------'  ` + R,
+		`             ` + Cyan + `|  |` + Reset + `         
+             ` + Cyan + `|  |` + Reset + `         
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + ` \       ` + Cyan + `|  |` + Gray + `       / ` + Reset + `
+        ` + Gray + `  '----------------'  ` + Reset,
 
 		// Frame 2: Splash at the bottom
-		`             ` + L + `|  |` + R + `         
-             ` + L + `|  |` + R + `         
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|       ` + W + `.` + L + `|  |` + W + `.` + G + `       |` + R + `
-        ` + G + ` \     ` + W + `o ` + L + `\__/` + W + ` o` + G + `     / ` + R + `
-        ` + G + `  '----------------'  ` + R,
+		`             ` + Cyan + `|  |` + Reset + `         
+             ` + Cyan + `|  |` + Reset + `         
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|       ` + Gray + `.` + Cyan + `|  |` + Gray + `.` + Gray + `       |` + Reset + `
+        ` + Gray + ` \     ` + Gray + `o ` + Cyan + `\__/` + Gray + ` o` + Gray + `     / ` + Reset + `
+        ` + Gray + `  '----------------'  ` + Reset,
 
 		// Frame 3: Filling, turbulent sloshing
-		`             ` + L + `|  |` + R + `         
-             ` + L + `|  |` + R + `         
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|       ` + W + `.` + L + `|  |` + W + `.` + G + `       |` + R + `
-        ` + G + `|     ` + W + `o ` + L + `~====~` + W + ` o` + G + `     |` + R + `
-        ` + G + `|    ` + L + `~==========~` + G + `    |` + R + `
-        ` + G + ` \ ` + L + `================` + G + ` / ` + R + `
-        ` + G + `  '----------------'  ` + R,
+		`             ` + Cyan + `|  |` + Reset + `         
+             ` + Cyan + `|  |` + Reset + `         
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|       ` + Gray + `.` + Cyan + `|  |` + Gray + `.` + Gray + `       |` + Reset + `
+        ` + Gray + `|     ` + Gray + `o ` + Cyan + `~====~` + Gray + ` o` + Gray + `     |` + Reset + `
+        ` + Gray + `|    ` + Cyan + `~==========~` + Gray + `    |` + Reset + `
+        ` + Gray + ` \ ` + Cyan + `================` + Gray + ` / ` + Reset + `
+        ` + Gray + `  '----------------'  ` + Reset,
 
 		// Frame 4: More filling, heavy waves
-		`             ` + L + `|  |` + R + `         
-             ` + L + `|  |` + R + `         
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|      ` + W + `. ` + L + `|  |` + W + ` .` + G + `      |` + R + `
-        ` + G + `|    ` + W + `o ` + L + `~======~` + W + ` o` + G + `    |` + R + `
-        ` + G + `|   ` + L + `~==============~` + G + `   |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + ` \` + L + `==================` + G + `/ ` + R + `
-        ` + G + `  '----------------'  ` + R,
+		`             ` + Cyan + `|  |` + Reset + `         
+             ` + Cyan + `|  |` + Reset + `         
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|      ` + Gray + `. ` + Cyan + `|  |` + Gray + ` .` + Gray + `      |` + Reset + `
+        ` + Gray + `|    ` + Gray + `o ` + Cyan + `~======~` + Gray + ` o` + Gray + `    |` + Reset + `
+        ` + Gray + `|   ` + Cyan + `~==============~` + Gray + `   |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + ` \` + Cyan + `==================` + Gray + `/ ` + Reset + `
+        ` + Gray + `  '----------------'  ` + Reset,
 
 		// Frame 5: Stream tapers off, breaking into drops
-		`             ` + L + `:  :` + R + `         
-             ` + L + `.  .` + R + `         
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|        ` + L + `|  |` + G + `        |` + R + `
-        ` + G + `|      ` + W + `. ` + L + `|  |` + W + ` .` + G + `      |` + R + `
-        ` + G + `|   ` + W + `o ` + L + `~========~` + W + ` o` + G + `   |` + R + `
-        ` + G + `| ` + L + `~================~` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + ` \` + L + `==================` + G + `/ ` + R + `
-        ` + G + `  '----------------'  ` + R,
+		`             ` + Cyan + `:  :` + Reset + `         
+             ` + Cyan + `.  .` + Reset + `         
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Cyan + `|  |` + Gray + `        |` + Reset + `
+        ` + Gray + `|      ` + Gray + `. ` + Cyan + `|  |` + Gray + ` .` + Gray + `      |` + Reset + `
+        ` + Gray + `|   ` + Gray + `o ` + Cyan + `~========~` + Gray + ` o` + Gray + `   |` + Reset + `
+        ` + Gray + `| ` + Cyan + `~================~` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + ` \` + Cyan + `==================` + Gray + `/ ` + Reset + `
+        ` + Gray + `  '----------------'  ` + Reset,
 
 		// Frame 6: Stream ends, ice cube drops from above
-		`                 ` + W + `[--]` + R + `       
+		`                 ` + Gray + `[--]` + Reset + `       
                             
-        ` + G + `|        ` + W + `o  o` + G + `        |` + R + `
-        ` + G + `|       ` + W + `.    .` + G + `       |` + R + `
-        ` + G + `| ` + L + `~=====` + W + `~~~~~~` + L + `=====~` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + ` \` + L + `==================` + G + `/ ` + R + `
-        ` + G + `  '----------------'  ` + R,
+        ` + Gray + `|        ` + Gray + `o  o` + Gray + `        |` + Reset + `
+        ` + Gray + `|       ` + Gray + `.    .` + Gray + `       |` + Reset + `
+        ` + Gray + `| ` + Cyan + `~=====` + Gray + `~~~~~~` + Cyan + `=====~` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + ` \` + Cyan + `==================` + Gray + `/ ` + Reset + `
+        ` + Gray + `  '----------------'  ` + Reset,
 
 		// Frame 7: Ice falling rapidly
 		`                            
-                 ` + W + `[--]` + R + `       
-        ` + G + `|                    |` + R + `
-        ` + G + `|                    |` + R + `
-        ` + G + `| ` + L + `~================~` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + ` \` + L + `==================` + G + `/ ` + R + `
-        ` + G + `  '----------------'  ` + R,
+                 ` + Gray + `[--]` + Reset + `       
+        ` + Gray + `|                    |` + Reset + `
+        ` + Gray + `|                    |` + Reset + `
+        ` + Gray + `| ` + Cyan + `~================~` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + ` \` + Cyan + `==================` + Gray + `/ ` + Reset + `
+        ` + Gray + `  '----------------'  ` + Reset,
 
 		// Frame 8: Ice hits liquid - HUGE splash
 		`                            
                             
-        ` + G + `|         ` + W + `. .` + G + `        |` + R + `
-        ` + G + `|        ` + W + `o | o` + G + `       |` + R + `
-        ` + G + `| ` + L + `~====` + W + `\_[--]_/` + L + `====~` + G + ` |` + R + `
-        ` + G + `| ` + L + `======` + W + `~~~~~~` + L + `======` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + ` \` + L + `==================` + G + `/ ` + R + `
-        ` + G + `  '----------------'  ` + R,
+        ` + Gray + `|         ` + Gray + `. .` + Gray + `        |` + Reset + `
+        ` + Gray + `|        ` + Gray + `o | o` + Gray + `       |` + Reset + `
+        ` + Gray + `| ` + Cyan + `~====` + Gray + `\_[--]_/` + Cyan + `====~` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `======` + Gray + `~~~~~~` + Cyan + `======` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + ` \` + Cyan + `==================` + Gray + `/ ` + Reset + `
+        ` + Gray + `  '----------------'  ` + Reset,
 
 		// Frame 9: Ice settles, waves roll outward
 		`                            
                             
-        ` + G + `|                    |` + R + `
-        ` + G + `|                    |` + R + `
-        ` + G + `| ` + L + `~~~~~~~` + W + `[--]` + L + `~~~~~~~` + G + ` |` + R + `
-        ` + G + `| ` + L + `========` + W + `\/` + L + `========` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + ` \` + L + `==================` + G + `/ ` + R + `
-        ` + G + `  '----------------'  ` + R,
+        ` + Gray + `|                    |` + Reset + `
+        ` + Gray + `|                    |` + Reset + `
+        ` + Gray + `| ` + Cyan + `~~~~~~~` + Gray + `[--]` + Cyan + `~~~~~~~` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `========` + Gray + `\/` + Cyan + `========` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + ` \` + Cyan + `==================` + Gray + `/ ` + Reset + `
+        ` + Gray + `  '----------------'  ` + Reset,
 
 		// Frame 10: Final state, liquid goes flat and calm
 		`                            
                             
-        ` + G + `|                    |` + R + `
-        ` + G + `|                    |` + R + `
-        ` + G + `| ` + L + `_______` + W + `[--]` + L + `_______` + G + ` |` + R + `
-        ` + G + `| ` + L + `========` + W + `\/` + L + `========` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + `| ` + L + `==================` + G + ` |` + R + `
-        ` + G + ` \` + L + `==================` + G + `/ ` + R + `
-        ` + G + `  '----------------'  ` + R,
+        ` + Gray + `|                    |` + Reset + `
+        ` + Gray + `|                    |` + Reset + `
+        ` + Gray + `| ` + Cyan + `_______` + Gray + `[--]` + Cyan + `_______` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `========` + Gray + `\/` + Cyan + `========` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + `| ` + Cyan + `==================` + Gray + ` |` + Reset + `
+        ` + Gray + ` \` + Cyan + `==================` + Gray + `/ ` + Reset + `
+        ` + Gray + `  '----------------'  ` + Reset,
 	}
 
 	// Tailored timing to make the physics feel real (fast pour, fast drop, slow settle)
@@ -175,5 +167,5 @@ func printPouringAnimation(msg string) {
 	}
 
 	// The final output message, now with an ice cube emoji!
-	fmt.Printf("\n\n  🧊 %s%s%s\n\n", L, msg, R)
+	fmt.Printf("\n\n  🧊 %s%s%s\n\n", Cyan, msg, Reset)
 }
