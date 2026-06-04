@@ -3,7 +3,7 @@ package vodka
 import (
 	"encoding/json"
 	"fmt"
-	
+
 	"io"
 	"log"
 	"mime/multipart"
@@ -262,6 +262,12 @@ func (c *Context) String(statusCode int, text string) {
 	c.Writer.Write([]byte(text))
 }
 
+// Redirecr sends a HTTP redirect response
+
+func (c *Context) Redirect(statusCode int, location string) {
+	http.Redirect(c.Writer, c.Request, location, statusCode)
+}
+
 // Helper to get request IP
 func (c *Context) IP() string {
 	return c.Request.RemoteAddr
@@ -391,13 +397,13 @@ func (c *Context) ClearCookie(name string) {
 func (c *Context) HTML(code int, name string, data interface{}) {
 	c.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
 	c.Writer.WriteHeader(code)
-	
+
 	tmpl := c.engine.getTemplate(name)
 	if tmpl == nil {
 		c.String(500, "Template not found: "+name)
 		return
 	}
-	
+
 	if err := tmpl.Execute(c.Writer, data); err != nil {
 		c.String(500, "Template error: "+err.Error())
 	}

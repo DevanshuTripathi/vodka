@@ -541,6 +541,90 @@ func TestClearCookie(t *testing.T) {
 	}
 }
 
+func TestContextRedirectStatus(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(
+		http.MethodGet, "/old", nil,
+	)
+
+	c := &Context{
+		Writer:  w,
+		Request: req,
+	}
+
+	c.Redirect(http.StatusFound, "/login")
+
+	if w.Code != http.StatusFound {
+		t.Fatalf(
+			"expected status %d, got %d",
+			http.StatusFound, w.Code,
+		)
+	}
+
+}
+func TestContextRedirectLocation(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/old",
+		nil,
+	)
+
+	c := &Context{
+		Writer:  w,
+		Request: req,
+	}
+
+	c.Redirect(http.StatusFound, "/login")
+
+	location := w.Header().Get("Location")
+
+	if location != "/login" {
+		t.Fatalf(
+			"expected location /login, got %s",
+			location,
+		)
+	}
+}
+
+func TestContextPermanentRedirect(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/old",
+		nil,
+	)
+
+	c := &Context{
+		Writer:  w,
+		Request: req,
+	}
+
+	c.Redirect(
+		http.StatusMovedPermanently,
+		"/new-path",
+	)
+
+	if w.Code != http.StatusMovedPermanently {
+		t.Fatalf(
+			"expected status %d, got %d",
+			http.StatusMovedPermanently,
+			w.Code,
+		)
+	}
+
+	location := w.Header().Get("Location")
+
+	if location != "/new-path" {
+		t.Fatalf(
+			"expected location /new-path, got %s",
+			location,
+		)
+	}
+}
 func TestClientIPBasic(t *testing.T) {
 	app := DefaultRouter()
 
