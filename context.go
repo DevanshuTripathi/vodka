@@ -2,6 +2,7 @@ package vodka
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 
 	"io"
@@ -240,6 +241,17 @@ func (c *Context) JSON(statusCode int, obj any) {
 	c.Writer.WriteHeader(statusCode)
 	if err := json.NewEncoder(c.Writer).Encode(obj); err != nil {
 		log.Printf("vodka: JSON encode error: %v", err)
+	}
+}
+
+// Emcode Response to XML
+
+func (c *Context) XML(statusCode int, obj any) {
+	c.Writer.Header().Set("Content-Type", "application/xml")
+	c.Writer.WriteHeader(statusCode)
+
+	if err := xml.NewEncoder(c.Writer).Encode(obj); err != nil {
+		log.Printf("vodka: XML encode error: %v", err)
 	}
 }
 

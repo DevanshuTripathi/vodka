@@ -3,6 +3,7 @@ package vodka
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -625,6 +626,98 @@ func TestContextPermanentRedirect(t *testing.T) {
 		)
 	}
 }
+
+type XMLUser struct {
+	XMLName xml.Name `xml:"user"`
+	Name    string   `xml:"name"`
+}
+
+func TestContextXMLStatus(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/",
+		nil,
+	)
+
+	c := &Context{
+		Writer:  w,
+		Request: req,
+	}
+
+	c.XML(http.StatusOK, XMLUser{
+		Name: "Utkarsh",
+	})
+
+	if w.Code != http.StatusOK {
+		t.Fatalf(
+			"expected status %d, got %d",
+			http.StatusOK,
+			w.Code,
+		)
+	}
+}
+
+func TestContextXMLContentType(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/",
+		nil,
+	)
+
+	c := &Context{
+		Writer:  w,
+		Request: req,
+	}
+
+	c.XML(http.StatusOK, XMLUser{
+		Name: "Utkarsh",
+	})
+
+	contentType := w.Header().Get("Content-Type")
+
+	if contentType != "application/xml" {
+		t.Fatalf(
+			"expected application/xml, got %s",
+			contentType,
+		)
+	}
+}
+
+func TestContextXMLBody(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/",
+		nil,
+	)
+
+	c := &Context{
+		Writer:  w,
+		Request: req,
+	}
+
+	c.XML(http.StatusOK, XMLUser{
+		Name: "Utkarsh",
+	})
+
+	body := w.Body.String()
+
+	if !strings.Contains(
+		body,
+		"<name>Utkarsh</name>",
+	) {
+		t.Fatalf(
+			"unexpected xml body: %s",
+			body,
+		)
+	}
+}
+
 func TestClientIPBasic(t *testing.T) {
 	app := DefaultRouter()
 
