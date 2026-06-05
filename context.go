@@ -3,7 +3,7 @@ package vodka
 import (
 	"encoding/json"
 	"fmt"
-	
+
 	"io"
 	"log"
 	"mime/multipart"
@@ -26,6 +26,10 @@ type M map[string]any // Shortcut map
 const abortIndex int8 = 63 // High Index for Abort Number
 
 var validate = validator.New() // validator for struct binding
+
+// trustedProxyWarningOnce ensures the "SetTrustedProxies never called" warning
+// is emitted at most once per process lifetime, not on every request.
+var trustedProxyWarningOnce sync.Once
 
 // Custom error type
 type VodkaError struct {
@@ -267,12 +271,23 @@ func (c *Context) IP() string {
 	return c.Request.RemoteAddr
 }
 
-// Helper to get actual client ip when XFF is involved
+// Helper to get actual client ip when XFF is involved.
+// NOTE: SetTrustedProxies must be called on the engine before this method can
+// parse X-Forwarded-For headers. Without it, ClientIP always returns RemoteAddr.
 func (c *Context) ClientIP() string {
 	ip, _ := parseRemoteIP(c.Request.RemoteAddr)
 
 	if ip == nil {
 		return ""
+	}
+
+	if c.engine.trustedProxies == nil {
+		trustedProxyWarningOnce.Do(func() {
+			log.Println(Yellow + "[Vodka Warning] SetTrustedProxies() was never called. " +
+				"ClientIP() will always return RemoteAddr and X-Forwarded-For will never be parsed. " +
+				"Call engine.SetTrustedProxies() to enable real client IP resolution behind a proxy." + Reset)
+		})
+		return ip.String()
 	}
 
 	if !c.engine.isTrustedProxy(ip) {
@@ -391,13 +406,13 @@ func (c *Context) ClearCookie(name string) {
 func (c *Context) HTML(code int, name string, data interface{}) {
 	c.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
 	c.Writer.WriteHeader(code)
-	
+
 	tmpl := c.engine.getTemplate(name)
 	if tmpl == nil {
 		c.String(500, "Template not found: "+name)
 		return
 	}
-	
+
 	if err := tmpl.Execute(c.Writer, data); err != nil {
 		c.String(500, "Template error: "+err.Error())
 	}

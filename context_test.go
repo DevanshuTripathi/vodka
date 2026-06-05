@@ -651,3 +651,43 @@ func TestClientIPInvalidHeader(t *testing.T) {
 		t.Fatalf("Expected=10.0.0.5, Got=%s", ip)
 	}
 }
+
+func TestClientIPNoTrustedProxiesReturnsRemoteAddr(t *testing.T) {
+	app := NewRouter()
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.RemoteAddr = "10.0.0.1:5000"
+	req.Header.Set("X-Forwarded-For", "203.0.113.99")
+
+	c := &Context{
+		Request: req,
+		engine:  app,
+	}
+
+	got := c.ClientIP()
+
+	if got != "10.0.0.1" {
+		t.Fatalf("expected RemoteAddr IP 10.0.0.1, got %s", got)
+	}
+}
+
+func TestClientIPNoTrustedProxiesXFFIgnored(t *testing.T) {
+	app := NewRouter()
+
+	proxyAddr := "10.0.0.5:9000"
+	clients := []string{"203.0.113.1", "203.0.113.2", "203.0.113.3"}
+
+	for _, clientIP := range clients {
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req.RemoteAddr = proxyAddr
+		req.Header.Set("X-Forwarded-For", clientIP)
+
+		c := &Context{Request: req, engine: app}
+
+		got := c.ClientIP()
+
+		if got != "10.0.0.5" {
+			t.Errorf("client %s: expected proxy IP 10.0.0.5 (untrusted-proxy path), got %s", clientIP, got)
+		}
+	}
+}
