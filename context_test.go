@@ -3,6 +3,7 @@ package vodka
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -538,6 +539,182 @@ func TestClearCookie(t *testing.T) {
 	}
 	if cookies[0].MaxAge != -1 {
 		t.Errorf("got MaxAge %d, want -1", cookies[0].MaxAge)
+	}
+}
+
+func TestContextRedirectStatus(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(
+		http.MethodGet, "/old", nil,
+	)
+
+	c := &Context{
+		Writer:  w,
+		Request: req,
+	}
+
+	c.Redirect(http.StatusFound, "/login")
+
+	if w.Code != http.StatusFound {
+		t.Fatalf(
+			"expected status %d, got %d",
+			http.StatusFound, w.Code,
+		)
+	}
+
+}
+func TestContextRedirectLocation(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/old",
+		nil,
+	)
+
+	c := &Context{
+		Writer:  w,
+		Request: req,
+	}
+
+	c.Redirect(http.StatusFound, "/login")
+
+	location := w.Header().Get("Location")
+
+	if location != "/login" {
+		t.Fatalf(
+			"expected location /login, got %s",
+			location,
+		)
+	}
+}
+
+func TestContextPermanentRedirect(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/old",
+		nil,
+	)
+
+	c := &Context{
+		Writer:  w,
+		Request: req,
+	}
+
+	c.Redirect(
+		http.StatusMovedPermanently,
+		"/new-path",
+	)
+
+	if w.Code != http.StatusMovedPermanently {
+		t.Fatalf(
+			"expected status %d, got %d",
+			http.StatusMovedPermanently,
+			w.Code,
+		)
+	}
+
+	location := w.Header().Get("Location")
+
+	if location != "/new-path" {
+		t.Fatalf(
+			"expected location /new-path, got %s",
+			location,
+		)
+	}
+}
+
+type XMLUser struct {
+	XMLName xml.Name `xml:"user"`
+	Name    string   `xml:"name"`
+}
+
+func TestContextXMLStatus(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/",
+		nil,
+	)
+
+	c := &Context{
+		Writer:  w,
+		Request: req,
+	}
+
+	c.XML(http.StatusOK, XMLUser{
+		Name: "Utkarsh",
+	})
+
+	if w.Code != http.StatusOK {
+		t.Fatalf(
+			"expected status %d, got %d",
+			http.StatusOK,
+			w.Code,
+		)
+	}
+}
+
+func TestContextXMLContentType(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/",
+		nil,
+	)
+
+	c := &Context{
+		Writer:  w,
+		Request: req,
+	}
+
+	c.XML(http.StatusOK, XMLUser{
+		Name: "Utkarsh",
+	})
+
+	contentType := w.Header().Get("Content-Type")
+
+	if contentType != "application/xml" {
+		t.Fatalf(
+			"expected application/xml, got %s",
+			contentType,
+		)
+	}
+}
+
+func TestContextXMLBody(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/",
+		nil,
+	)
+
+	c := &Context{
+		Writer:  w,
+		Request: req,
+	}
+
+	c.XML(http.StatusOK, XMLUser{
+		Name: "Utkarsh",
+	})
+
+	body := w.Body.String()
+
+	if !strings.Contains(
+		body,
+		"<name>Utkarsh</name>",
+	) {
+		t.Fatalf(
+			"unexpected xml body: %s",
+			body,
+		)
 	}
 }
 

@@ -2,6 +2,7 @@ package vodka
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 
 	"io"
@@ -247,6 +248,17 @@ func (c *Context) JSON(statusCode int, obj any) {
 	}
 }
 
+// Emcode Response to XML
+
+func (c *Context) XML(statusCode int, obj any) {
+	c.Writer.Header().Set("Content-Type", "application/xml")
+	c.Writer.WriteHeader(statusCode)
+
+	if err := xml.NewEncoder(c.Writer).Encode(obj); err != nil {
+		log.Printf("vodka: XML encode error: %v", err)
+	}
+}
+
 // Stores Errors in the context to be handled by ErrorHandler Middleware
 func (c *Context) Error(statusCode int, err error) {
 	if err == nil {
@@ -264,6 +276,12 @@ func (c *Context) String(statusCode int, text string) {
 	c.Writer.Header().Set("Content-Type", "text/plain")
 	c.Writer.WriteHeader(statusCode)
 	c.Writer.Write([]byte(text))
+}
+
+// Redirecr sends a HTTP redirect response
+
+func (c *Context) Redirect(statusCode int, location string) {
+	http.Redirect(c.Writer, c.Request, location, statusCode)
 }
 
 // Helper to get request IP
