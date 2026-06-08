@@ -284,6 +284,18 @@ func (c *Context) Redirect(statusCode int, location string) {
 	http.Redirect(c.Writer, c.Request, location, statusCode)
 }
 
+// Status header
+
+func (c *Context) Status(code int) {
+	c.Writer.WriteHeader(code)
+}
+
+// NoContent Header
+
+func (c *Context) NoContent() {
+	c.Status(http.StatusNoContent)
+}
+
 // Helper to get request IP
 func (c *Context) IP() string {
 	return c.Request.RemoteAddr

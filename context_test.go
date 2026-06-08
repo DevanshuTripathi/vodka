@@ -678,7 +678,6 @@ func TestContextXMLContentType(t *testing.T) {
 	})
 
 	contentType := w.Header().Get("Content-Type")
-
 	if contentType != "application/xml" {
 		t.Fatalf(
 			"expected application/xml, got %s",
@@ -718,6 +717,45 @@ func TestContextXMLBody(t *testing.T) {
 	}
 }
 
+func TestContextStatus(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	c := &Context{
+		Writer: w,
+	}
+
+	c.Status(http.StatusAccepted)
+
+	if w.Code != http.StatusAccepted {
+		t.Fatalf("expected %d got %d",
+			http.StatusAccepted,
+			w.Code,
+		)
+	}
+	if w.Body.Len() != 0 {
+		t.Fatalf("Body not empty")
+	}
+
+}
+
+func TestContextNoContent(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	c := &Context{
+		Writer: w,
+	}
+
+	c.NoContent()
+
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("expected %d got %d", http.StatusNoContent, w.Code)
+	}
+
+	if w.Body.Len() != 0 {
+		t.Fatalf("Body not empty")
+	}
+
+}
 func TestClientIPBasic(t *testing.T) {
 	app := DefaultRouter()
 
