@@ -9,7 +9,7 @@ interface MarkdownRendererProps {
 
 export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
   return (
-    <div className="prose prose-sm dark:prose-invert max-w-none p-8">
+    <div className="prose prose-slate prose-sm max-w-none rounded-3xl border border-slate-200 bg-white p-8 shadow-sm shadow-slate-900/5 dark:prose-invert dark:border-slate-800 dark:bg-slate-900/60">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -25,9 +25,9 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
           code: (props) => {
             const { inline } = props as { inline?: boolean };
             return inline ? (
-              <code className="bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded" {...props} />
+              <code className="rounded bg-slate-100 px-2 py-1 dark:bg-slate-800" {...props} />
             ) : (
-              <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+              <pre className="overflow-x-auto rounded-2xl bg-slate-950 p-4 text-slate-100">
                 <code {...props} />
               </pre>
             );

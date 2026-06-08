@@ -10,7 +10,7 @@ export default async function DocsPage() {
   return (
     <div>
       <Navbar />
-      <div className="bg-black min-h-screen">
+      <div className="min-h-screen bg-slate-50 text-slate-950 transition-colors dark:bg-slate-950 dark:text-slate-100">
         <main className="flex-1 p-8 max-w-4xl mx-auto">
           <MarkdownRenderer content={readmeContent} />
         </main>
