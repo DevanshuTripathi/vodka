@@ -49,6 +49,7 @@ Unlike traditional Go frameworks that focus only on request handling, Vodka heav
 - [Minimal API Example](#minimal-api-example)
 - [Using Vodka for APIs](#using-vodka-for-apis)
 - [Core Concepts](#core-concepts)
+- [Graceful Shutdown & Lifecycle Manager](#graceful-shutdown--lifecycle-manager)
 - [Middleware](#middleware)
 - [Validation](#validation)
 - [Authentication](#authentication)
@@ -408,6 +409,162 @@ c.BindJSON(&user)
 
 ```go
 c.Error(400, errors.New("invalid request"))
+```
+
+---
+
+# Graceful Shutdown & Lifecycle Manager
+
+Vodka features a production-ready application lifecycle management system that handles:
+- **Startup Hooks**: Run code before the HTTP server starts.
+- **Shutdown Hooks**: Run code sequentially when the application receives termination signals (`SIGINT`, `SIGTERM`).
+- **Priority-Based Execution**: Control the shutdown sequence of your resources.
+- **Graceful HTTP Server Shutdown**: Stop accepting new connections and finish active requests.
+- **Configurable Shutdown Timeout**: Cancel remaining work if the timeout expires.
+- **Error Aggregation**: Collect and report errors from all hooks.
+
+---
+
+## Startup Hooks
+
+Startup hooks allow executing initialization code (e.g., establishing database connections, seeding data) before the server begins serving requests. If any startup hook returns an error, server startup is immediately aborted.
+
+```go
+app.OnStart(func() error {
+    return initializeDatabase()
+})
+```
+
+---
+
+## Shutdown Hooks & Priority
+
+Shutdown hooks are executed sequentially when a termination signal is received. You can register hooks with a priority value:
+
+- Higher priority hooks execute first.
+- If priorities are equal, hooks execute in registration order.
+- The default priority is `0` when calling `OnShutdown`.
+
+```go
+// Priority 100: runs first
+app.OnShutdownWithPriority(100, func(ctx context.Context) error {
+    return closeDatabase()
+})
+
+// Priority 50: runs second
+app.OnShutdownWithPriority(50, func(ctx context.Context) error {
+    return stopWorkers()
+})
+
+// Default priority (0): runs last
+app.OnShutdown(func(ctx context.Context) error {
+    return cleanupTempFiles()
+})
+```
+
+---
+
+## Timeout Configuration
+
+By default, Vodka allows up to `30 seconds` for the entire shutdown sequence (including finishing active HTTP requests and running all shutdown hooks). You can customize this timeout:
+
+```go
+app.SetShutdownTimeout(45 * time.Second)
+```
+
+---
+
+## Production Example
+
+Here is a full production-ready example demonstrating database cleanup, worker queue termination, and graceful server shutdown:
+
+```go
+package main
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+	"log"
+	"time"
+
+	"github.com/DevanshuTripathi/vodka"
+	_ "github.com/lib/pq"
+)
+
+func main() {
+	app := vodka.DefaultRouter()
+
+	var db *sql.DB
+
+	// 1. Register Startup Hook to initialize database
+	app.OnStart(func() error {
+		var err error
+		db, err = sql.Open("postgres", "postgres://user:pass@localhost/db?sslmode=disable")
+		if err != nil {
+			return fmt.Errorf("failed to open database: %w", err)
+		}
+		
+		// Verify connection
+		if err := db.Ping(); err != nil {
+			return fmt.Errorf("failed to ping database: %w", err)
+		}
+		log.Println("Database connection established")
+		return nil
+	})
+
+	// 2. Start workers
+	workerCtx, cancelWorkers := context.WithCancel(context.Background())
+	app.OnStart(func() error {
+		go runBackgroundWorkers(workerCtx)
+		log.Println("Background workers started")
+		return nil
+	})
+
+	// 3. Configure Shutdown Timeout
+	app.SetShutdownTimeout(15 * time.Second)
+
+	// 4. Register Shutdown Hooks in priority order
+	
+	// Stop background workers first (Priority 100)
+	app.OnShutdownWithPriority(100, func(ctx context.Context) error {
+		log.Println("Stopping background workers...")
+		cancelWorkers()
+		return nil
+	})
+
+	// Close database connection (Priority 50)
+	app.OnShutdownWithPriority(50, func(ctx context.Context) error {
+		log.Println("Closing database connection...")
+		if db != nil {
+			return db.Close()
+		}
+		return nil
+	})
+
+	// Simple route
+	app.GET("/", func(c *vodka.Context) {
+		c.String(200, "Hello, Graceful Vodka!")
+	})
+
+	// 5. Start the server (handles SIGINT/SIGTERM automatically)
+	if err := app.Run(":8080"); err != nil {
+		log.Fatalf("Server stopped with error: %v", err)
+	}
+}
+
+func runBackgroundWorkers(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			log.Println("Workers stopped")
+			return
+		default:
+			// Perform background work
+			time.Sleep(1 * time.Second)
+		}
+	}
+}
 ```
 
 ---
