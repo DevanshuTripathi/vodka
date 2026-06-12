@@ -1,8 +1,22 @@
 package vodka
 
-import "net/http"
+import (
+	"net/http"
+	"strconv"
+)
 
-func AllowCORS(origins []string) HandlerFunc {
+// CORSConfig holds configuration options for the CORS middleware
+type CORSConfig struct {
+	Origins []string
+	MaxAge  int
+}
+
+func AllowCORS(origins []string, config ...CORSConfig) HandlerFunc {
+	maxAge := 0
+	if len(config) > 0 && config[0].MaxAge > 0 {
+		maxAge = config[0].MaxAge
+	}
+
 	return func(c *Context) {
 		origin := c.Request.Header.Get("Origin")
 		allow := false
@@ -16,21 +30,26 @@ func AllowCORS(origins []string) HandlerFunc {
 		}
 
 		if allow {
-			// Set the necessary headers for POST requests
+			// Set the necessary headers
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS")
-			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			c.Writer.Header().Set("Access-Control-Allow-Methods",
+				"GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS")
+			c.Writer.Header().Set("Access-Control-Allow-Headers",
+				"Content-Type, Authorization")
 		}
 
 		// The Critical Preflight Check
 		if c.Request.Method == "OPTIONS" {
 			if allow {
-				c.Writer.WriteHeader(http.StatusNoContent) // Send 204 Success
+				// MaxAge only makes sense on preflight, set it here
+				if maxAge > 0 {
+					c.Writer.Header().Set("Access-Control-Max-Age",
+						strconv.Itoa(maxAge))
+				}
+				c.Writer.WriteHeader(http.StatusNoContent) // 204
 			} else {
-				c.Writer.WriteHeader(http.StatusForbidden) // Send 403 Forbidden
+				c.Writer.WriteHeader(http.StatusForbidden) // 403
 			}
-
-			// Stop the request from going to the router
 			c.Abort()
 			return
 		}
@@ -38,4 +57,3 @@ func AllowCORS(origins []string) HandlerFunc {
 		c.Next()
 	}
 }
-
