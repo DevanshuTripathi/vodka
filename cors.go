@@ -36,17 +36,16 @@ func AllowCORS(origins []string, config ...CORSConfig) HandlerFunc {
 				"GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS")
 			c.Writer.Header().Set("Access-Control-Allow-Headers",
 				"Content-Type, Authorization")
-
-			// Set MaxAge if configured to cache preflight requests
-			if maxAge > 0 {
-				c.Writer.Header().Set("Access-Control-Max-Age",
-					strconv.Itoa(maxAge))
-			}
 		}
 
 		// The Critical Preflight Check
 		if c.Request.Method == "OPTIONS" {
 			if allow {
+				// MaxAge only makes sense on preflight, set it here
+				if maxAge > 0 {
+					c.Writer.Header().Set("Access-Control-Max-Age",
+						strconv.Itoa(maxAge))
+				}
 				c.Writer.WriteHeader(http.StatusNoContent) // 204
 			} else {
 				c.Writer.WriteHeader(http.StatusForbidden) // 403
