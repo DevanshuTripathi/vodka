@@ -116,3 +116,42 @@ func TestCORSMaxAgeBlockedForDisallowedOrigin(t *testing.T) {
 		t.Fatalf("expected no Access-Control-Max-Age for blocked origin, got %q", maxAge)
 	}
 }
+
+func TestCORSVaryOrigin(t *testing.T) {
+	app := DefaultRouter()
+
+	app.Use(AllowCORS([]string{
+		"http://localhost:3000",
+	}))
+
+	app.GET("/test", func(c *Context) {
+		c.String(http.StatusOK, "ok")
+	})
+
+	req := httptest.NewRequest(
+		http.MethodGet,
+		"/test",
+		nil,
+	)
+	req.Header.Set("Origin", "http://localhost:3000")
+
+	w := httptest.NewRecorder()
+
+	app.ServeHTTP(w, req)
+
+	if got := w.Header().Get("Access-Control-Allow-Origin"); got != "http://localhost:3000" {
+		t.Fatalf(
+			"expected Access-Contol-Allow-Origin to be %q, got %q",
+			"http://localhost:3000",
+			got,
+		)
+	}
+
+	if got := w.Header().Get("Vary"); got != "Origin" {
+		t.Fatalf(
+			"expected Vary header to be %q, got %q",
+			"Origin",
+			got,
+		)
+	}
+}

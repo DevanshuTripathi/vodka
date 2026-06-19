@@ -32,6 +32,7 @@ func AllowCORS(origins []string, config ...CORSConfig) HandlerFunc {
 		if allow {
 			// Set the necessary headers
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+			c.Writer.Header().Add("Vary", "Origin")
 			c.Writer.Header().Set("Access-Control-Allow-Methods",
 				"GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS")
 			c.Writer.Header().Set("Access-Control-Allow-Headers",
