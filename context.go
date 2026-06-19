@@ -1,10 +1,10 @@
 package vodka
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-
 	"io"
 	"log"
 	"mime/multipart"
@@ -236,6 +236,29 @@ func (c *Context) BindJSON(obj any) error {
 		return err // Failed validation
 	}
 
+	return nil
+}
+
+func (c *Context) BindJSONReusable(obj any) error {
+	if c.Request.Body == nil {
+		return fmt.Errorf("request body is empty")
+	}
+
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		return err
+	}
+
+	c.Request.Body.Close()
+
+	c.Request.Body = io.NopCloser(bytes.NewReader(body))
+
+	if err := json.Unmarshal(body, obj); err != nil {
+		return err
+	}
+	if err := validate.Struct(obj); err != nil {
+		return err
+	}
 	return nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -129,7 +130,64 @@ func TestBindJSON(t *testing.T) {
 		t.Errorf("got %s, expected success", response["message"])
 	}
 }
+func TestBindJSONReusablePreservesBody(t *testing.T) {
+	type User struct {
+		Name string `json: "name"`
+	}
 
+	body := `{"name": "Utkarsh"}`
+
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/",
+		strings.NewReader(body),
+	)
+
+	c := &Context{
+		Request: req,
+	}
+
+	var user User
+	err := c.BindJSONReusable(&user)
+	if err != nil {
+		t.Fatalf("unexpercted error: %v", err)
+	}
+
+	if user.Name != "Utkarsh" {
+		t.Fatalf("expected Utkarsh, got %s", user.Name)
+	}
+
+	remaining, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		t.Fatalf("failed reading restored body %v", err)
+	}
+
+	if string(remaining) != body {
+		t.Fatalf("expected body: %q, got: %q",
+			body,
+			string(remaining),
+		)
+	}
+}
+
+func TestBindJSONReusableInvalidJSON(t *testing.T) {
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/",
+		strings.NewReader(`{invalid}`),
+	)
+
+	c := &Context{
+		Request: req,
+	}
+
+	var dst map[string]any
+
+	if err := c.BindJSONReusable(&dst); err == nil {
+		t.Fatal("expected error")
+	}
+
+}
 func newTestContext(method, target string) *Context {
 	return &Context{Request: httptest.NewRequest(method, target, nil)}
 }
