@@ -681,130 +681,248 @@ If you find bugs or have suggestions, feel free to open an issue or submit a pul
 
 <!-- CONTRIBUTORS:START -->
 
-<a href="https://github.com/DevanshuTripathi">
-  <img src="https://avatars.githubusercontent.com/u/74350750?v=4" width="80px;" alt="DevanshuTripathi"/><br/>
-  <sub><b>DevanshuTripathi</b></sub>
-</a>
+<div class="contributors-grid">
+
+  <a class="card" href="https://github.com/DevanshuTripathi" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/74350750?v=4" />
+    <div class="name">DevanshuTripathi</div>
+    <div class="bio">GitHub Contributor</div>
+
+    <div class="stats">
+      <span>⭐ 50</span>
+      <span>👥 15</span>
+    </div>
+  </a>
+
+  <a class="card" href="https://github.com/hariom888" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/188325558?v=4" />
+    <div class="name">hariom888</div>
+    <div class="bio">GitHub Contributor</div>
+
+    <div class="stats">
+      <span>⭐ 20</span>
+      <span>👥 1</span>
+    </div>
+  </a>
+
+  <a class="card" href="https://github.com/Sounak-star" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/180566751?v=4" />
+    <div class="name">Sounak-star</div>
+    <div class="bio">GitHub Contributor</div>
+
+    <div class="stats">
+      <span>⭐ 16</span>
+      <span>👥 0</span>
+    </div>
+  </a>
+
+  <a class="card" href="https://github.com/Utkarsh0uchiha" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/117010422?v=4" />
+    <div class="name">Utkarsh0uchiha</div>
+    <div class="bio">Trying to be eloquent in coding while chasing the philosophy whilst touching grass.</div>
+
+    <div class="stats">
+      <span>⭐ 12</span>
+      <span>👥 13</span>
+    </div>
+  </a>
+
+  <a class="card" href="https://github.com/Srejoye" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/177326090?v=4" />
+    <div class="name">Srejoye</div>
+    <div class="bio">GitHub Contributor</div>
+
+    <div class="stats">
+      <span>⭐ 19</span>
+      <span>👥 3</span>
+    </div>
+  </a>
+
+  <a class="card" href="https://github.com/anshggss" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/144388813?v=4" />
+    <div class="name">anshggss</div>
+    <div class="bio">GitHub Contributor</div>
+
+    <div class="stats">
+      <span>⭐ 33</span>
+      <span>👥 10</span>
+    </div>
+  </a>
+
+  <a class="card" href="https://github.com/jk1507" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/187723724?v=4" />
+    <div class="name">jk1507</div>
+    <div class="bio">🛡️ Breaking Systems to Understand Them.
 
 
-<a href="https://github.com/hariom888">
-  <img src="https://avatars.githubusercontent.com/u/188325558?v=4" width="80px;" alt="hariom888"/><br/>
-  <sub><b>hariom888</b></sub>
-</a>
+🤖 Teaching Machines to Think Securely.
 
 
-<a href="https://github.com/Sounak-star">
-  <img src="https://avatars.githubusercontent.com/u/180566751?v=4" width="80px;" alt="Sounak-star"/><br/>
-  <sub><b>Sounak-star</b></sub>
-</a>
+🔍 Cyber Crime Police Intern | Building the Future of AI Security.
+</div>
 
+    <div class="stats">
+      <span>⭐ 12</span>
+      <span>👥 0</span>
+    </div>
+  </a>
 
-<a href="https://github.com/Utkarsh0uchiha">
-  <img src="https://avatars.githubusercontent.com/u/117010422?v=4" width="80px;" alt="Utkarsh0uchiha"/><br/>
-  <sub><b>Utkarsh0uchiha</b></sub>
-</a>
+  <a class="card" href="https://github.com/Mritunjay2005" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/138350127?v=4" />
+    <div class="name">Mritunjay2005</div>
+    <div class="bio">code to solve problem</div>
 
+    <div class="stats">
+      <span>⭐ 27</span>
+      <span>👥 8</span>
+    </div>
+  </a>
 
-<a href="https://github.com/Srejoye">
-  <img src="https://avatars.githubusercontent.com/u/177326090?v=4" width="80px;" alt="Srejoye"/><br/>
-  <sub><b>Srejoye</b></sub>
-</a>
+  <a class="card" href="https://github.com/grishabhatia" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/178971480?v=4" />
+    <div class="name">grishabhatia</div>
+    <div class="bio">GitHub Contributor</div>
 
+    <div class="stats">
+      <span>⭐ 41</span>
+      <span>👥 1</span>
+    </div>
+  </a>
 
-<a href="https://github.com/anshggss">
-  <img src="https://avatars.githubusercontent.com/u/144388813?v=4" width="80px;" alt="anshggss"/><br/>
-  <sub><b>anshggss</b></sub>
-</a>
+  <a class="card" href="https://github.com/DevdharManpuria" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/175636139?v=4" />
+    <div class="name">DevdharManpuria</div>
+    <div class="bio">GitHub Contributor</div>
 
+    <div class="stats">
+      <span>⭐ 13</span>
+      <span>👥 2</span>
+    </div>
+  </a>
 
-<a href="https://github.com/jk1507">
-  <img src="https://avatars.githubusercontent.com/u/187723724?v=4" width="80px;" alt="jk1507"/><br/>
-  <sub><b>jk1507</b></sub>
-</a>
+  <a class="card" href="https://github.com/Anand-240" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/188213371?v=4" />
+    <div class="name">Anand-240</div>
+    <div class="bio">🏆 SIH'25 Winner | Full Stack Dev (MERN · Next.js) | Docker · K8s · AWS | B.Tech CSE @ ABES '28</div>
 
+    <div class="stats">
+      <span>⭐ 36</span>
+      <span>👥 12</span>
+    </div>
+  </a>
 
-<a href="https://github.com/Mritunjay2005">
-  <img src="https://avatars.githubusercontent.com/u/138350127?v=4" width="80px;" alt="Mritunjay2005"/><br/>
-  <sub><b>Mritunjay2005</b></sub>
-</a>
+  <a class="card" href="https://github.com/ghosthouse7" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/229156343?v=4" />
+    <div class="name">ghosthouse7</div>
+    <div class="bio">On a quest for O(1)</div>
 
+    <div class="stats">
+      <span>⭐ 34</span>
+      <span>👥 7</span>
+    </div>
+  </a>
 
-<a href="https://github.com/grishabhatia">
-  <img src="https://avatars.githubusercontent.com/u/178971480?v=4" width="80px;" alt="grishabhatia"/><br/>
-  <sub><b>grishabhatia</b></sub>
-</a>
+  <a class="card" href="https://github.com/i-OmSharma" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/116426515?v=4" />
+    <div class="name">i-OmSharma</div>
+    <div class="bio">GitHub Contributor</div>
 
+    <div class="stats">
+      <span>⭐ 48</span>
+      <span>👥 14</span>
+    </div>
+  </a>
 
-<a href="https://github.com/DevdharManpuria">
-  <img src="https://avatars.githubusercontent.com/u/175636139?v=4" width="80px;" alt="DevdharManpuria"/><br/>
-  <sub><b>DevdharManpuria</b></sub>
-</a>
+  <a class="card" href="https://github.com/rajsingh1301" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/195672131?v=4" />
+    <div class="name">rajsingh1301</div>
+    <div class="bio">Fresher @ABESEC</div>
 
+    <div class="stats">
+      <span>⭐ 32</span>
+      <span>👥 4</span>
+    </div>
+  </a>
 
-<a href="https://github.com/Anand-240">
-  <img src="https://avatars.githubusercontent.com/u/188213371?v=4" width="80px;" alt="Anand-240"/><br/>
-  <sub><b>Anand-240</b></sub>
-</a>
+  <a class="card" href="https://github.com/Aish-kul16" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/227191125?v=4" />
+    <div class="name">Aish-kul16</div>
+    <div class="bio">GitHub Contributor</div>
 
+    <div class="stats">
+      <span>⭐ 26</span>
+      <span>👥 1</span>
+    </div>
+  </a>
 
-<a href="https://github.com/ghosthouse7">
-  <img src="https://avatars.githubusercontent.com/u/229156343?v=4" width="80px;" alt="ghosthouse7"/><br/>
-  <sub><b>ghosthouse7</b></sub>
-</a>
+  <a class="card" href="https://github.com/bhavyanjain3004" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/127675863?v=4" />
+    <div class="name">bhavyanjain3004</div>
+    <div class="bio">GitHub Contributor</div>
 
+    <div class="stats">
+      <span>⭐ 58</span>
+      <span>👥 2</span>
+    </div>
+  </a>
 
-<a href="https://github.com/i-OmSharma">
-  <img src="https://avatars.githubusercontent.com/u/116426515?v=4" width="80px;" alt="i-OmSharma"/><br/>
-  <sub><b>i-OmSharma</b></sub>
-</a>
+  <a class="card" href="https://github.com/EchoOfCode" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/210523620?v=4" />
+    <div class="name">EchoOfCode</div>
+    <div class="bio">GitHub Contributor</div>
 
+    <div class="stats">
+      <span>⭐ 27</span>
+      <span>👥 1</span>
+    </div>
+  </a>
 
-<a href="https://github.com/rajsingh1301">
-  <img src="https://avatars.githubusercontent.com/u/195672131?v=4" width="80px;" alt="rajsingh1301"/><br/>
-  <sub><b>rajsingh1301</b></sub>
-</a>
+  <a class="card" href="https://github.com/OdaloV" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/147773886?v=4" />
+    <div class="name">OdaloV</div>
+    <div class="bio">Software Developer</div>
 
+    <div class="stats">
+      <span>⭐ 30</span>
+      <span>👥 4</span>
+    </div>
+  </a>
 
-<a href="https://github.com/Aish-kul16">
-  <img src="https://avatars.githubusercontent.com/u/227191125?v=4" width="80px;" alt="Aish-kul16"/><br/>
-  <sub><b>Aish-kul16</b></sub>
-</a>
+  <a class="card" href="https://github.com/dimple9079" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/219795540?v=4" />
+    <div class="name">dimple9079</div>
+    <div class="bio">GitHub Contributor</div>
 
+    <div class="stats">
+      <span>⭐ 11</span>
+      <span>👥 0</span>
+    </div>
+  </a>
 
-<a href="https://github.com/bhavyanjain3004">
-  <img src="https://avatars.githubusercontent.com/u/127675863?v=4" width="80px;" alt="bhavyanjain3004"/><br/>
-  <sub><b>bhavyanjain3004</b></sub>
-</a>
+  <a class="card" href="https://github.com/dynamo-pentester" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/145715786?v=4" />
+    <div class="name">dynamo-pentester</div>
+    <div class="bio">Security Engineering • Backend Systems • VAPT & CTF
+Building systems, breaking them, and securing them</div>
 
+    <div class="stats">
+      <span>⭐ 25</span>
+      <span>👥 3</span>
+    </div>
+  </a>
 
-<a href="https://github.com/EchoOfCode">
-  <img src="https://avatars.githubusercontent.com/u/210523620?v=4" width="80px;" alt="EchoOfCode"/><br/>
-  <sub><b>EchoOfCode</b></sub>
-</a>
+  <a class="card" href="https://github.com/mzl2233" target="_blank">
+    <img src="https://avatars.githubusercontent.com/u/109468061?v=4" />
+    <div class="name">mzl2233</div>
+    <div class="bio">GitHub Contributor</div>
 
+    <div class="stats">
+      <span>⭐ 136</span>
+      <span>👥 2</span>
+    </div>
+  </a>
 
-<a href="https://github.com/OdaloV">
-  <img src="https://avatars.githubusercontent.com/u/147773886?v=4" width="80px;" alt="OdaloV"/><br/>
-  <sub><b>OdaloV</b></sub>
-</a>
-
-
-<a href="https://github.com/dimple9079">
-  <img src="https://avatars.githubusercontent.com/u/219795540?v=4" width="80px;" alt="dimple9079"/><br/>
-  <sub><b>dimple9079</b></sub>
-</a>
-
-
-<a href="https://github.com/dynamo-pentester">
-  <img src="https://avatars.githubusercontent.com/u/145715786?v=4" width="80px;" alt="dynamo-pentester"/><br/>
-  <sub><b>dynamo-pentester</b></sub>
-</a>
-
-
-<a href="https://github.com/mzl2233">
-  <img src="https://avatars.githubusercontent.com/u/109468061?v=4" width="80px;" alt="mzl2233"/><br/>
-  <sub><b>mzl2233</b></sub>
-</a>
+</div>
 
 <!-- CONTRIBUTORS:END -->
 
