@@ -670,7 +670,6 @@ Vodka is designed around a few core ideas:
 
 ---
 
-# Contributing
 
 Contributions, issues, and feature requests are welcome.
 
@@ -678,6 +677,12 @@ If you find bugs or have suggestions, feel free to open an issue or submit a pul
 
 ---
 
+# Our Contributors
+
+<!-- CONTRIBUTORS:START -->
+<!-- CONTRIBUTORS:END -->
+
+---
 # License
 
 MIT License
