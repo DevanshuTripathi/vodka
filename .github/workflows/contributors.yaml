@@ -3,7 +3,7 @@ name: Update Contributors
 on:
   push:
     branches:
-      - main
+      - "**"
   workflow_dispatch:
 
 jobs:
