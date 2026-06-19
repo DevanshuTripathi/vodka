@@ -3,8 +3,12 @@ name: Update Contributors
 on:
   push:
     branches:
-      - "**"
+      - main
+      - contributors
   workflow_dispatch:
+  schedule:
+    - cron: "0 */12 * * *" # every 12 hours
+
 
 jobs:
   contributors:
