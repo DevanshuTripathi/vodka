@@ -27,27 +27,26 @@ async function main() {
             };
         })
     );
-
     const html = `
-<div class="contributors-grid">
-${users
+        <table>
+        <tr>
+            ${users
             .map(
                 (u) => `
-  <a class="card" href="${u.url}" target="_blank">
-    <img src="${u.avatar}" />
-    <div class="name">${u.login}</div>
-    <div class="bio">${u.bio}</div>
-
-    <div class="stats">
-      <span>⭐ ${u.repos}</span>
-      <span>👥 ${u.followers}</span>
-    </div>
-  </a>
-`
+            <td align="center" width="140">
+                <a href="${u.url}">
+                <img src="${u.avatar}" width="80" height="80"><br/>
+                <b>${u.login}</b><br/>
+                <sub>${u.bio ? u.bio.slice(0, 20) : "Contributor"}</sub><br/>
+                <sub>⭐ ${u.repos} | 👥 ${u.followers}</sub>
+                </a>
+            </td>
+            `
             )
             .join("")}
-</div>
-`;
+        </tr>
+        </table>
+        `;
 
     const readme = fs.readFileSync("README.md", "utf8");
 
