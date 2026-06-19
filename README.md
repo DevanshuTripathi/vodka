@@ -679,8 +679,8 @@ If you find bugs or have suggestions, feel free to open an issue or submit a pul
 
 # Our Contributors
 
-<!-- CONTRIBUTORS:START -->
-<!-- CONTRIBUTORS:END -->
+<!-- readme: contributors -start -->
+<!-- readme: contributors -end -->
 
 ---
 # License
