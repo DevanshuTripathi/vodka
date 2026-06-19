@@ -189,32 +189,81 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="bg-slate-950 text-slate-300 border-t border-slate-800 py-8">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex flex-col gap-6 items-start justify-between sm:flex-row sm:items-center">
-            <div>
-              <p className="text-sm font-semibold text-white">Vodka</p>
-              <p className="mt-2 text-sm text-slate-500">
-                Minimal Go web framework for fast full-stack development.
-              </p>
-            </div>
 
-            <div className="flex flex-wrap gap-4 text-sm">
-              <Link href="/docs" className="transition hover:text-white">
-                Docs
-              </Link>
-              <a
-                href="https://github.com/DevanshuTripathi/vodka"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition hover:text-white"
-              >
-                GitHub
-              </a>
-            </div>
-          </div>
+
+<footer className="bg-slate-950 border-t border-slate-800">
+  <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+    <div className="flex flex-col gap-10 lg:flex-row lg:justify-between">
+      {/* Brand */}
+      <div className="max-w-md">
+        <h2 className="text-3xl font-bold text-white">Vodka</h2>
+
+        <p className="mt-4 text-slate-400 leading-relaxed">
+          A fast, focused Go framework for modern developer workflows.
+        </p>
+
+        <p className="mt-3 text-slate-500">
+          Minimal by design. Built for performance. Made for developers.
+        </p>
+      </div>
+
+      {/* Navigation */}
+      <div className="lg:pt-3">
+        <p className="mb-5 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+          Navigation
+        </p>
+
+        <div className="flex flex-wrap gap-x-10 gap-y-5 text-lg">
+          <Link
+            href="/"
+            className="font-medium text-slate-300 transition hover:text-white"
+          >
+            Home
+          </Link>
+
+          <Link
+            href="/#features"
+            className="font-medium text-slate-300 transition hover:text-white"
+          >
+            Features
+          </Link>
+
+          <Link
+            href="/#about"
+            className="font-medium text-slate-300 transition hover:text-white"
+          >
+            About
+          </Link>
+
+          <Link
+            href="/docs"
+            className="font-medium text-slate-300 transition hover:text-white"
+          >
+            Documentation
+          </Link>
+
+          <a
+            href="https://github.com/DevanshuTripathi/vodka"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-slate-300 transition hover:text-white"
+          >
+            GitHub
+          </a>
         </div>
-      </footer>
+      </div>
+    </div>
+
+    <div className="mt-10 flex flex-col gap-4 border-t border-slate-800 pt-6 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm text-slate-500">
+        © {new Date().getFullYear()} Vodka. Built with Go.
+      </p>
+    </div>
+  </div>
+</footer>
+
+
+
     </div>
   );
 }
