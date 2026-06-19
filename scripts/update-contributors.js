@@ -3,23 +3,51 @@ const fs = require("fs");
 const OWNER = "DevanshuTripathi";
 const REPO = "vodka";
 
+async function getJSON(url) {
+    const res = await fetch(url);
+    return res.json();
+}
+
 async function main() {
-    const res = await fetch(
+    const contributors = await getJSON(
         `https://api.github.com/repos/${OWNER}/${REPO}/contributors`
     );
 
-    const contributors = await res.json();
+    const users = await Promise.all(
+        contributors.map(async (c) => {
+            const u = await getJSON(`https://api.github.com/users/${c.login}`);
 
-    const html = contributors
-        .map(
-            (c) => `
-<a href="${c.html_url}">
-  <img src="${c.avatar_url}" width="80px;" alt="${c.login}"/><br/>
-  <sub><b>${c.login}</b></sub>
-</a>
+            return {
+                login: c.login,
+                avatar: c.avatar_url,
+                url: c.html_url,
+                bio: u.bio || "GitHub Contributor",
+                followers: u.followers,
+                repos: u.public_repos,
+            };
+        })
+    );
+
+    const html = `
+<div class="contributors-grid">
+${users
+            .map(
+                (u) => `
+  <a class="card" href="${u.url}" target="_blank">
+    <img src="${u.avatar}" />
+    <div class="name">${u.login}</div>
+    <div class="bio">${u.bio}</div>
+
+    <div class="stats">
+      <span>⭐ ${u.repos}</span>
+      <span>👥 ${u.followers}</span>
+    </div>
+  </a>
 `
-        )
-        .join("\n");
+            )
+            .join("")}
+</div>
+`;
 
     const readme = fs.readFileSync("README.md", "utf8");
 

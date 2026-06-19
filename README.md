@@ -812,3 +812,55 @@ If you find bugs or have suggestions, feel free to open an issue or submit a pul
 # License
 
 MIT License
+<style>
+.contributors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--color-canvas-default, #ffffff);
+  border: 1px solid var(--color-border-default, #d0d7de);
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.card img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-bottom: 8px;
+  border: 2px solid #ddd;
+}
+
+.name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.bio {
+  font-size: 12px;
+  opacity: 0.7;
+  margin: 6px 0;
+  min-height: 30px;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 8px;
+}
+</style>
