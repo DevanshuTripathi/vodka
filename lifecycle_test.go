@@ -221,7 +221,7 @@ func TestSignalHandling(t *testing.T) {
 	// Run the server in a goroutine
 	errChan := make(chan error, 1)
 	go func() {
-		errChan <- app.Run(":18080")
+		errChan <- app.Run(":0")
 	}()
 
 	// Wait a moment for server to start listening
@@ -250,5 +250,54 @@ func TestSignalHandling(t *testing.T) {
 
 	if !shutdownCalled {
 		t.Fatal("expected shutdown hooks to be called on signal")
+	}
+}
+
+func TestShutdownIdempotent(t *testing.T) {
+	app := NewRouter()
+	callCount := 0
+
+	app.OnShutdown(func(ctx context.Context) error {
+		callCount++
+		return nil
+	})
+
+	srv := &http.Server{}
+
+	if err := app.shutdown(srv); err != nil {
+		t.Fatalf("unexpected first shutdown error: %v", err)
+	}
+	if callCount != 1 {
+		t.Fatalf("expected shutdown hook to run once, got %d", callCount)
+	}
+
+	if err := app.shutdown(srv); err != nil {
+		t.Fatalf("unexpected second shutdown error: %v", err)
+	}
+	if callCount != 1 {
+		t.Fatalf("expected shutdown hook not to run again, got %d", callCount)
+	}
+}
+
+func TestConcurrentHookRegistration(t *testing.T) {
+	app := NewRouter()
+	var wg sync.WaitGroup
+	for i := 0; i < 50; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			app.OnStart(func() error { return nil })
+			app.OnShutdown(func(ctx context.Context) error { return nil })
+		}()
+	}
+	wg.Wait()
+
+	if err := app.lifecycle.runStartupHooks(); err != nil {
+		t.Fatalf("unexpected startup hooks error: %v", err)
+	}
+
+	srv := &http.Server{}
+	if err := app.shutdown(srv); err != nil {
+		t.Fatalf("unexpected shutdown error after concurrent registration: %v", err)
 	}
 }

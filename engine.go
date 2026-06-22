@@ -36,6 +36,7 @@ type Engine struct {
 	templatesMu    sync.RWMutex
 	*RouterGroup
 	lifecycle      *LifecycleManager
+	shutdownOnce   sync.Once
 }
 
 // creates a new router
@@ -86,10 +87,13 @@ func (e *Engine) Run(addr string) error {
 		addr = ":8080"
 	}
 
+	log.Println("Starting application...")
+
 	// 1. Execute startup hooks before serving
 	if err := e.lifecycle.runStartupHooks(); err != nil {
 		return err
 	}
+	log.Println("Startup hooks completed")
 
 	log.Printf(Green+"Pouring Vodka on %s\n"+Reset, addr)
 
@@ -112,6 +116,7 @@ func (e *Engine) Run(addr string) error {
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(quit)
 
 	select {
 	case err := <-serverErr:
@@ -122,13 +127,22 @@ func (e *Engine) Run(addr string) error {
 		}
 		return err
 	case sig := <-quit:
-		log.Printf(Yellow+"Received signal: %v. Initiating graceful shutdown...\n"+Reset, sig)
+		log.Printf(Yellow+"Shutdown signal received: %v\n"+Reset, sig)
 		return e.shutdown(srv)
 	}
 }
 
-// shutdown handles graceful HTTP server shutdown and executes registered shutdown hooks.
+// shutdown ensures shutdown is performed only once and delegates to shutdownInternal.
 func (e *Engine) shutdown(srv *http.Server) error {
+	var err error
+	e.shutdownOnce.Do(func() {
+		err = e.shutdownInternal(srv)
+	})
+	return err
+}
+
+// shutdownInternal handles graceful HTTP server shutdown and executes registered shutdown hooks.
+func (e *Engine) shutdownInternal(srv *http.Server) error {
 	e.lifecycle.mu.Lock()
 	timeout := e.lifecycle.timeout
 	hooks := make([]lifecycleHook, len(e.lifecycle.shutdownHooks))
@@ -144,6 +158,8 @@ func (e *Engine) shutdown(srv *http.Server) error {
 	if err := srv.Shutdown(ctx); err != nil {
 		shutdownErrors = append(shutdownErrors, fmt.Errorf("server shutdown failed: %w", err))
 	}
+
+	log.Println("Running shutdown hooks...")
 
 	// Step 3: Sort shutdown hooks by priority (descending), preserving registration order for equal priorities.
 	sort.SliceStable(hooks, func(i, j int) bool {
@@ -165,9 +181,11 @@ func (e *Engine) shutdown(srv *http.Server) error {
 	}
 
 	if len(shutdownErrors) > 0 {
+		log.Println("Shutdown complete with errors")
 		return &ShutdownError{Errors: shutdownErrors}
 	}
 
+	log.Println("Shutdown complete")
 	return nil
 }
 
