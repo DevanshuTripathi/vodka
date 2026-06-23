@@ -32,110 +32,121 @@ export default async function DocsPage() {
         {" "}
         <div className="max-w-6xl mx-auto flex items-start">
           {" "}
-          <aside className="hidden lg:block w-80 shrink-0 sticky top-16 h-[calc(100vh-4rem)] border-r border-slate-300 bg-slate-50 p-10 overflow-y-auto">
-            {" "}
-            <h3 className="font-bold text-xl mb-6">Documentation</h3>
-            <nav className="space-y-4 text-base text-slate-700">
-              {" "}
+          <aside className="hidden lg:block w-64 shrink-0 sticky top-20 h-[calc(100vh-5rem)] bg-white p-4">
+            <h3 className="text-sm font-medium text-black text-slate-700 tracking-[0.12em] uppercase mb-3 px-2">
+              Documentation
+            </h3>
+            <nav className="flex flex-col text-xs">
+              <div className="h-px bg-slate-100 my-1.5 mx-2" />
+
               <a
                 href="#features"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Features
               </a>
               <a
                 href="#why-vodka"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Why Vodka
               </a>
+
+              <div className="h-px bg-slate-100 my-1.5 mx-2" />
+
               <a
                 href="#installation"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Installation
               </a>
               <a
                 href="#quick-start"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Quick Start
               </a>
               <a
                 href="#demo"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Demo
               </a>
               <a
                 href="#project-scaffolding"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Project Scaffolding
               </a>
               <a
                 href="#minimal-api"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Minimal API
               </a>
+
+              <div className="h-px bg-slate-100 my-1.5 mx-2" />
+
               <a
                 href="#core-concepts"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Core Concepts
               </a>
               <a
                 href="#middleware"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Middleware
               </a>
               <a
                 href="#request-id"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Request ID
               </a>
               <a
                 href="#validation"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Validation
               </a>
               <a
                 href="#authentication"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Authentication
               </a>
+
+              <div className="h-px bg-slate-100 my-1.5 mx-2" />
+
               <a
                 href="#templates"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Templates
               </a>
               <a
                 href="#template-rendering"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Template Rendering
               </a>
               <a
                 href="#spa-support"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 SPA Support
               </a>
               <a
                 href="#additional-info"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Additional Info
               </a>
               <a
                 href="#roadmap"
-                className="block px-3 py-0.2 rounded-lg hover:bg-slate-300 hover:text-black transition-all duration-200"
+                className="px-3 py-1.5 text-slate-700 border-l-2 border-transparent hover:text-black hover:bg-slate-100 transition-all duration-150"
               >
                 Roadmap
               </a>
@@ -143,7 +154,7 @@ export default async function DocsPage() {
           </aside>
           <main className="flex-1 px-8 py-4">
             <div className="mb-8">
-              <p className="uppercase tracking-[0.25em] text-slate-500 text-xs mb-3">
+              <p className="uppercase tracking-[0.25em] text-slate-500 text-lg mb-3">
                 Documentation
               </p>
 
