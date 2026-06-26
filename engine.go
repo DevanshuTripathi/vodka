@@ -1,15 +1,21 @@
 package vodka
 
 import (
+	"context"
+	"fmt"
 	"html/template"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
+	"syscall"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
@@ -29,6 +35,8 @@ type Engine struct {
 	templates      map[string]*template.Template
 	templatesMu    sync.RWMutex
 	*RouterGroup
+	lifecycle      *LifecycleManager
+	shutdownOnce   sync.Once
 }
 
 // creates a new router
@@ -36,8 +44,9 @@ func NewRouter() *Engine {
 	router := httprouter.New()
 	router.HandleOPTIONS = false
 	engine := &Engine{
-		router:   router,
-		WSConfig: DefaultWSConfig(),
+		router:    router,
+		WSConfig:  DefaultWSConfig(),
+		lifecycle: NewLifecycleManager(),
 	}
 
 	engine.RouterGroup = &RouterGroup{
@@ -72,15 +81,128 @@ func (rg *RouterGroup) Use(middlewares ...HandlerFunc) {
 }
 
 // Runs the http server
+// Runs the http server with startup/shutdown hook management and graceful shutdown
 func (e *Engine) Run(addr string) error {
 	if addr == "" {
 		addr = ":8080"
 	}
 
+	log.Println("Starting application...")
+
+	// 1. Execute startup hooks before serving
+	if err := e.lifecycle.runStartupHooks(); err != nil {
+		return err
+	}
+	log.Println("Startup hooks completed")
+
 	log.Printf(Green+"Pouring Vodka on %s\n"+Reset, addr)
 
-	// Using net/http
-	return http.ListenAndServe(addr, e)
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
+	}
+
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: e,
+	}
+
+	serverErr := make(chan error, 1)
+	go func() {
+		if err := srv.Serve(ln); err != nil && err != http.ErrServerClosed {
+			serverErr <- err
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(quit)
+
+	select {
+	case err := <-serverErr:
+		// If server failed to start/serve, perform shutdown to clean up hooks
+		shutdownErr := e.shutdown(srv)
+		if shutdownErr != nil {
+			return fmt.Errorf("server error: %v; shutdown errors: %v", err, shutdownErr)
+		}
+		return err
+	case sig := <-quit:
+		log.Printf(Yellow+"Shutdown signal received: %v\n"+Reset, sig)
+		return e.shutdown(srv)
+	}
+}
+
+// shutdown ensures shutdown is performed only once and delegates to shutdownInternal.
+func (e *Engine) shutdown(srv *http.Server) error {
+	var err error
+	e.shutdownOnce.Do(func() {
+		err = e.shutdownInternal(srv)
+	})
+	return err
+}
+
+// shutdownInternal handles graceful HTTP server shutdown and executes registered shutdown hooks.
+func (e *Engine) shutdownInternal(srv *http.Server) error {
+	e.lifecycle.mu.Lock()
+	timeout := e.lifecycle.timeout
+	hooks := make([]lifecycleHook, len(e.lifecycle.shutdownHooks))
+	copy(hooks, e.lifecycle.shutdownHooks)
+	e.lifecycle.mu.Unlock()
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	var shutdownErrors []error
+
+	// Step 2: Gracefully finish active requests
+	if err := srv.Shutdown(ctx); err != nil {
+		shutdownErrors = append(shutdownErrors, fmt.Errorf("server shutdown failed: %w", err))
+	}
+
+	log.Println("Running shutdown hooks...")
+
+	// Step 3: Sort shutdown hooks by priority (descending), preserving registration order for equal priorities.
+	sort.SliceStable(hooks, func(i, j int) bool {
+		if hooks[i].priority != hooks[j].priority {
+			return hooks[i].priority > hooks[j].priority
+		}
+		return hooks[i].order < hooks[j].order
+	})
+
+	// Step 4: Execute registered shutdown hooks sequentially
+	for _, hook := range hooks {
+		if err := ctx.Err(); err != nil {
+			shutdownErrors = append(shutdownErrors, fmt.Errorf("shutdown timeout exceeded: %w", err))
+			break
+		}
+		if err := hook.fn(ctx); err != nil {
+			shutdownErrors = append(shutdownErrors, err)
+		}
+	}
+
+	if len(shutdownErrors) > 0 {
+		log.Println("Shutdown complete with errors")
+		return &ShutdownError{Errors: shutdownErrors}
+	}
+
+	log.Println("Shutdown complete")
+	return nil
+}
+
+func (e *Engine) OnStart(fn func() error) {
+	e.lifecycle.RegisterStart(fn)
+}
+
+func (e *Engine) OnShutdown(fn func(context.Context) error) {
+	e.lifecycle.RegisterShutdown(0, fn)
+}
+
+func (e *Engine) OnShutdownWithPriority(priority int, fn func(context.Context) error) {
+	e.lifecycle.RegisterShutdown(priority, fn)
+}
+
+func (e *Engine) SetShutdownTimeout(timeout time.Duration) {
+	e.lifecycle.SetTimeout(timeout)
 }
 
 // LoadHTMLGlob parses and caches templates from a glob pattern
