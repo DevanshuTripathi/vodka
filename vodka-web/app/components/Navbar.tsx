@@ -21,6 +21,12 @@ export default function Navbar() {
             <a href="#about" className="rounded-full border border-slate-700 px-4 py-2 transition-colors duration-200 hover:border-slate-500 hover:text-slate-300">
               About 
             </a>
+                    <a
+          href="#contact"
+          className="rounded-full border border-slate-700 px-4 py-2 transition-colors duration-200 hover:border-slate-500 hover:text-slate-300"
+        >
+          Contact
+        </a>
             <a
               href="#contributors"
               className="rounded-full border border-slate-700 px-4 py-2 transition-colors duration-200 hover:border-slate-500 hover:text-slate-300"

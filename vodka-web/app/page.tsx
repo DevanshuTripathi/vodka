@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Navbar from "./components/Navbar";
 import Contributors from "./components/Contributors";
-
+import Contact from "./components/Contact";
 export default function Home() {
   return (
     <div className="min-h-screen bg-white text-slate-950">
@@ -182,6 +182,9 @@ export default function Home() {
             </div>
           </div>
         </section>
+        <section id="contact">
+          <Contact/>
+        </section>
 
         {/* CONTRIBUTORS SECTION ADDED */}
         <section id="contributors">
@@ -234,6 +237,12 @@ export default function Home() {
           >
             About
           </Link>
+               <Link
+    href="/#contact"
+    className="font-medium text-slate-300 transition hover:text-white"
+  >
+    Contact
+  </Link>
 
           <Link
             href="/docs"
